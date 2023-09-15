@@ -131,9 +131,11 @@ export default class OpenApiStager {
     properties.forEach((property) => {
       const sanitizedProperty = camelCase(property.replace(".", " "));
 
-      urlEncoded.schema.properties[sanitizedProperty] =
-        urlEncoded.schema.properties[property];
-      delete urlEncoded.schema.properties[property];
+      if (sanitizedProperty !== property) {
+        urlEncoded.schema.properties[sanitizedProperty] =
+          urlEncoded.schema.properties[property];
+        delete urlEncoded.schema.properties[property];
+      }
     });
   }
 

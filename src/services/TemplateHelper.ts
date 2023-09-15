@@ -54,7 +54,9 @@ export class Helper {
   pascalCase = (str: string) => pascalCase(str);
 
   titleCase = (str: string) => {
-    const base = str.replace(/[._]/g, " ").trim();
+    let base = str.replace(/[._]/g, " ").trim();
+
+    if (base.toUpperCase() === str) base = base.toLowerCase();
 
     return str.includes("_")
       ? titleCase(base).replace("Id", "ID") // for snake case

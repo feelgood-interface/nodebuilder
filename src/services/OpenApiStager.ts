@@ -112,10 +112,12 @@ export default class OpenApiStager {
 
     if (urlEncoded) {
       this.sanitizeProperties(urlEncoded);
+      this.sanitizeEnumProperties(urlEncoded);
     }
 
     if (json) {
       this.sanitizeProperties(json);
+      this.sanitizeEnumProperties(json);
     }
 
     if (textPlain) {
@@ -140,6 +142,18 @@ export default class OpenApiStager {
         urlEncoded.schema.properties[sanitizedProperty] =
           urlEncoded.schema.properties[property];
         delete urlEncoded.schema.properties[property];
+      }
+    });
+  }
+
+  /** Format enum properties as options type */
+  private sanitizeEnumProperties(urlEncoded: { schema: RequestBodySchema }) {
+    const propertyValues = Object.values(urlEncoded.schema.properties);
+    propertyValues.forEach((value: ParamContent & { enum?: [] }) => {
+      if (value.enum) {
+        value.type = "options";
+        value.options = value.enum;
+        delete value.enum;
       }
     });
   }

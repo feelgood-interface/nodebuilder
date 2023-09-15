@@ -12,6 +12,7 @@ export default class OpenApiStager {
   private readonly serviceName: string;
   private currentEndpoint: string;
   private currentResource: string;
+  private currentMethod: string;
 
   constructor(serviceName: string) {
     this.serviceName = serviceName.replace(".json", "");
@@ -70,6 +71,7 @@ export default class OpenApiStager {
       resources.forEach((resource) => {
         methods.forEach((method) => {
           this.currentResource = resource;
+          this.currentMethod = method;
           const operation = this.createOperation(method);
           mainParams[resource] = mainParams[resource] || []; // TODO: nullish-coalescing operator
           mainParams[resource].push(operation);
@@ -217,7 +219,17 @@ export default class OpenApiStager {
   }
 
   private processParameters() {
-    const parameters = this.extract("parameters");
+    // Operation parameters
+    let parameters = this.extract("parameters");
+
+    // Path parameters
+    const pathParameters = jsonQuery({
+      json: this.json,
+      path: `$.paths.[${this.currentEndpoint}].parameters`,
+    });
+    if (pathParameters.length) {
+      parameters = parameters.concat(pathParameters[0]);
+    }
 
     parameters.forEach((param: OperationParameter) => {
       if (param.description) {
@@ -309,6 +321,14 @@ export default class OpenApiStager {
 
     if (hasExtraNesting) return result[0];
 
+    if (key === "requestMethods") {
+      // Remove parameters at the path level
+      const index = result.indexOf("parameters");
+      if (index !== -1) {
+        result.splice(index, 1);
+      }
+    }
+
     return result;
   }
 
@@ -324,6 +344,7 @@ export default class OpenApiStager {
   private setEndOfPath(key: OpenApiKey) {
     if (key === "tags") return `*.${key}.*`;
     if (key === "requestMethods") return `*~`;
+    if (key === "operationId") return `${this.currentMethod}.${key}`;
     return `*.${key}`;
   }
 

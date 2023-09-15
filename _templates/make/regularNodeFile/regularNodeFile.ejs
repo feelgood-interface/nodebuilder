@@ -53,7 +53,7 @@ export class <%= helper.pascalCase(metaParams.serviceName); %> implements INodeT
 					},
 					<%_ }); _%><%#_ end resourceNames loop _%>
 				],
-				default: '<%= builder.resourceNames[0].toLowerCase() %>',
+				default: '<%= helper.camelCase(builder.resourceNames[0]) %>',
 			},
 			<%_ builder.resourceNames.forEach((resourceName) => { _%>
 			...<%= helper.camelCase(resourceName) %>Operations,

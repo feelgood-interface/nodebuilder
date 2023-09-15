@@ -143,6 +143,7 @@ export default class OpenApiStager {
     }
 
     if (!body.schema.properties) {
+      body.schema.properties = {};
       return;
     }
 
@@ -161,6 +162,7 @@ export default class OpenApiStager {
   /** Format enum properties as options type */
   private sanitizeEnumProperties(body: { schema: RequestBodySchema }) {
     if (!body.schema.properties) {
+      body.schema.properties = {};
       return;
     }
     const propertyValues = Object.values(body.schema.properties);

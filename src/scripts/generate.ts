@@ -21,9 +21,9 @@ import path from "path";
   } else {
     let openApiFile = await prompter.askForOpenApiFile();
 
-    if (openApiFile.endsWith(".yaml")) {
+    if (openApiFile.endsWith(".yaml") || openApiFile.endsWith(".yml")) {
       const source = path.join(openApiInputDir, openApiFile);
-      const openApiFileName = openApiFile.replace(/.yaml/, "");
+      const openApiFileName = openApiFile.replace(/.yaml|.yml/, "");
       const target = path.join(openApiInputDir, `${openApiFileName}.json`);
 
       execSync(`node ${swagger} bundle -o ${target} ${source}`);

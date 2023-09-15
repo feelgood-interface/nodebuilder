@@ -136,13 +136,9 @@ export default class OpenApiStager {
   }
 
   private sanitizeProperties(body: { schema: RequestBodySchema }) {
-    if ("oneOf" in body.schema && body.schema.oneOf) {
-      body.schema = body.schema.oneOf[0];
-    } else if ("anyOf" in body.schema && body.schema.anyOf) {
-      body.schema = body.schema.anyOf[0];
-    } else if ("allOf" in body.schema && body.schema.allOf) {
-      body.schema = this.mergeAllOf(body.schema);
-    }
+    body.schema = this.mergeAllOf(body.schema);
+    body.schema = this.mergeAnyOf(body.schema);
+    body.schema = this.mergeOneOf(body.schema);
 
     if (!body.schema.properties) {
       body.schema.properties = {};
@@ -236,17 +232,9 @@ export default class OpenApiStager {
         param.description = this.escape(param.description);
       }
 
-      if ("oneOf" in param.schema && param.schema.oneOf) {
-        param.schema = param.schema.oneOf[0];
-      }
-
-      if ("anyOf" in param.schema && param.schema.anyOf) {
-        param.schema = param.schema.anyOf[0];
-      }
-
-      if ("allOf" in param.schema && param.schema.allOf) {
-        param.schema = this.mergeAllOf(param.schema);
-      }
+      param.schema = this.mergeAllOf(param.schema);
+      param.schema = this.mergeAnyOf(param.schema);
+      param.schema = this.mergeOneOf(param.schema);
     });
 
     return parameters.map((field) =>
@@ -255,6 +243,75 @@ export default class OpenApiStager {
   }
 
   // TODO: fix types
+  /** Only take first sub-schema */
+  private mergeAnyOf(schema: any): any {
+    if (!schema || typeof schema !== "object") {
+      return schema;
+    }
+
+    if (Array.isArray(schema.anyOf) && schema.anyOf.length > 0) {
+      const firstSchema = this.mergeAnyOf(schema.anyOf[0]);
+
+      // Remove the anyOf keyword and replace it with the first schema
+      delete schema.anyOf;
+      return { ...firstSchema, ...schema };
+    }
+
+    // Recursively merge anyOf schemas in properties
+    if (schema.properties) {
+      Object.keys(schema.properties).forEach((prop) => {
+        schema.properties[prop] = this.mergeAnyOf(schema.properties[prop]);
+      });
+    }
+
+    // Recursively merge anyOf schemas in items (for arrays)
+    if (schema.items) {
+      if (Array.isArray(schema.items)) {
+        schema.items = schema.items.map((item: any) => this.mergeAnyOf(item));
+      } else {
+        schema.items = this.mergeAnyOf(schema.items);
+      }
+    }
+
+    return schema;
+  }
+
+  // TODO: fix types
+  /** Only take first sub-schema */
+  private mergeOneOf(schema: any): any {
+    if (!schema || typeof schema !== "object") {
+      return schema;
+    }
+
+    if (Array.isArray(schema.oneOf) && schema.oneOf.length > 0) {
+      const firstSchema = this.mergeOneOf(schema.oneOf[0]);
+
+      // Remove the oneOf keyword and replace it with the first schema
+      delete schema.oneOf;
+      return { ...firstSchema, ...schema };
+    }
+
+    // Recursively merge oneOf schemas in properties
+    if (schema.properties) {
+      Object.keys(schema.properties).forEach((prop) => {
+        schema.properties[prop] = this.mergeOneOf(schema.properties[prop]);
+      });
+    }
+
+    // Recursively merge oneOf schemas in items (for arrays)
+    if (schema.items) {
+      if (Array.isArray(schema.items)) {
+        schema.items = schema.items.map((item: any) => this.mergeOneOf(item));
+      } else {
+        schema.items = this.mergeOneOf(schema.items);
+      }
+    }
+
+    return schema;
+  }
+
+  // TODO: fix types
+  /** Merge schemas */
   private mergeAllOf(schema: any): any {
     if (!schema || typeof schema !== "object") {
       return schema;

@@ -145,6 +145,8 @@ export default class OpenApiStager {
       return;
     }
 
+    body.schema = this.removeReadOnlyOrWriteOnlyProperties(body.schema);
+
     const properties = Object.keys(body.schema.properties);
     properties.forEach((property) => {
       const sanitizedProperty = camelCase(property.replace(".", " "));
@@ -349,6 +351,47 @@ export default class OpenApiStager {
     return schema;
   }
 
+  private removeReadOnlyOrWriteOnlyProperties(schema: any) {
+    if (!schema || typeof schema !== "object") {
+      return schema;
+    }
+
+    // Check if the schema has the "readOnly" or "writeOnly" property and matches the HTTP method
+    if (
+      (schema.readOnly && this.currentMethod.toUpperCase() !== "GET") ||
+      (schema.writeOnly && this.currentEndpoint.toUpperCase() === "GET")
+    ) {
+      return undefined; // Remove the property
+    }
+
+    // Recursively check and remove properties in nested objects
+    if (schema.properties) {
+      Object.keys(schema.properties).forEach((prop) => {
+        const updatedProperty = this.removeReadOnlyOrWriteOnlyProperties(
+          schema.properties[prop]
+        );
+        if (updatedProperty === undefined) {
+          delete schema.properties[prop]; // Remove the property
+        } else {
+          schema.properties[prop] = updatedProperty;
+        }
+      });
+    }
+
+    // Recursively check and remove properties in array items
+    if (schema.items) {
+      if (Array.isArray(schema.items)) {
+        schema.items = schema.items.map((item: any) =>
+          this.removeReadOnlyOrWriteOnlyProperties(item)
+        );
+      } else {
+        schema.items = this.removeReadOnlyOrWriteOnlyProperties(schema.items);
+      }
+    }
+
+    return schema;
+  }
+
   // ----------------------------------
   //            extractors
   // ----------------------------------
@@ -401,7 +444,9 @@ export default class OpenApiStager {
   private setEndOfPath(key: OpenApiKey) {
     if (key === "tags") return `*.${key}.*`;
     if (key === "requestMethods") return `*~`;
-    if (key === "operationId") return `${this.currentMethod}.${key}`;
+    if (key === "operationId" || key === "requestBody")
+      return `${this.currentMethod}.${key}`;
+
     return `*.${key}`;
   }
 

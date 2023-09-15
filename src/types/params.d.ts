@@ -86,9 +86,6 @@ type PathQuerySchema = {
   minimum?: number;
   maximum?: number;
   options?: string[]; // from custom spec in YAML
-  allOf?: PathQuerySchema[];
-  anyOf?: PathQuerySchema[];
-  oneOf?: PathQuerySchema[];
 };
 
 type OperationRequestBody = {
@@ -109,9 +106,6 @@ type RequestBodySchema = {
   properties: {
     [propertyName: string]: ParamContent;
   };
-  allOf?: RequestBodySchema[];
-  anyOf?: RequestBodySchema[];
-  oneOf?: RequestBodySchema[];
 };
 
 type ParamContent = {

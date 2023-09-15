@@ -1,3 +1,4 @@
 src/input/*.json
 src/output/**/*.ts
 *.yaml
+_templates/**/*.ejs

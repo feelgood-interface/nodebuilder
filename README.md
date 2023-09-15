@@ -52,6 +52,7 @@ $ cd nodebuilder && npm i
 3. Inspect `src/output/`
 
 Notes:
+
 - OpenAPI parsing may fail at undetected edge cases. If your spec cannot be parsed, please open an issue.
 - OpenAPI parsing needs to be adjusted to respect n8n's resources-and-operations format. Work in progress.
 
@@ -61,7 +62,7 @@ Notes:
 2. Run `npm run generate`
 3. Inspect `src/output/`
 
-For a full description of how to describe an API in YAML, refer to [this explanation](https://github.com/ivov/nodebuilder/blob/main/docs/yaml-mapping.md).
+For a full description of how to describe an API in YAML, refer to [this explanation](https://github.com/ivov/nodebuilder/blob/main/docs/custom-spec-syntax.md).
 
 For a full example of an API description in YAML, refer to [`copper.yaml`](https://github.com/ivov/nodebuilder/blob/main/src/input/custom/copper.yaml).
 
@@ -75,19 +76,23 @@ Run `npm run place` to place the output files in:
 ## Pending
 
 **OpenAPI:**
-  - Add intermediate step to structure the result.
-  - Add support for more content types.
+
+- Add intermediate step to structure the result.
+- Add support for more content types.
 
 **YAML:**
-  - Add support for `multiOptions`
+
+- Add support for `multiOptions`
 
 **Generator:**
-  - Add resource loaders to the TypeScript generator.
-  - Generate `*.credentials.ts`
+
+- Add resource loaders to the TypeScript generator.
+- Generate `*.credentials.ts`
 
 **Extras:**
-  - Implement testing with [`git.js`](https://github.com/steveukx/git-js)
-  - Explore integration with [VSCode YAML](https://github.com/redhat-developer/vscode-yaml)
+
+- Implement testing with [`git.js`](https://github.com/steveukx/git-js)
+- Explore integration with [VSCode YAML](https://github.com/redhat-developer/vscode-yaml)
 
 ## Author
 

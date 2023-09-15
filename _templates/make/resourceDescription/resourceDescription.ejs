@@ -15,14 +15,14 @@ export const <%= helper.camelCase(resourceName) %>Operations: INodeProperties[] 
 		displayOptions: {
 			show: {
 				resource: [
-					'<%= resourceName %>',
+					'<%= helper.camelCase(resourceName); %>',
 				],
 			},
 		},
 		options: [
 			<%- builder.operationsOptions(operationsArray); %>
 		],
-		default: '<%= operationsArray[0].operationId %>',
+		default: '<%= helper.camelCase(operationsArray[0].operationId); %>',
 	},
 ];
 
@@ -66,10 +66,10 @@ export const <%= helper.camelCase(resourceName) %>Fields: INodeProperties[] = [
 		displayOptions: {
 			show: {
 				resource: [
-					'<%= resourceName %>',
+					'<%= helper.camelCase(resourceName); %>',
 				],
 				operation: [
-					'<%= operation.operationId; %>',
+					'<%= helper.camelCase(operation.operationId); %>',
 				],
 			},
 		},
@@ -116,10 +116,10 @@ export const <%= helper.camelCase(resourceName) %>Fields: INodeProperties[] = [
 		displayOptions: {
 			show: {
 				resource: [
-					'<%= resourceName; %>',
+					'<%= helper.camelCase(resourceName); %>',
 				],
 				operation: [
-					'<%= operation.operationId; %>',
+					'<%= helper.camelCase(operation.operationId); %>',
 				],
 			},
 		},
@@ -138,10 +138,10 @@ export const <%= helper.camelCase(resourceName) %>Fields: INodeProperties[] = [
 		displayOptions: {
 			show: {
 				resource: [
-					'<%= resourceName; %>',
+					'<%= helper.camelCase(resourceName); %>',
 				],
 				operation: [
-					'<%= operation.operationId; %>',
+					'<%= helper.camelCase(operation.operationId); %>',
 				],
 			},
 		},
@@ -158,10 +158,10 @@ export const <%= helper.camelCase(resourceName) %>Fields: INodeProperties[] = [
 		displayOptions: {
 			show: {
 				resource: [
-					'<%= resourceName; %>',
+					'<%= helper.camelCase(resourceName); %>',
 				],
 				operation: [
-					'<%= operation.operationId; %>',
+					'<%= helper.camelCase(operation.operationId); %>',
 				],
 			},
 		},

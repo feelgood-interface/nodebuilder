@@ -56,7 +56,7 @@ export class Helper {
   titleCase = (str: string) => {
     let base = str.replace(/[._]/g, " ").trim();
 
-    if (base.toUpperCase() === str) base = base.toLowerCase();
+    if (base.toUpperCase() === base) base = base.toLowerCase();
 
     return str.includes("_")
       ? titleCase(base).replace("Id", "ID") // for snake case

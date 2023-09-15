@@ -91,6 +91,7 @@ type PathQuerySchema = {
 type OperationRequestBody = {
   content: {
     "application/x-www-form-urlencoded"?: { schema: RequestBodySchema };
+    "application/json"?: { schema: RequestBodySchema };
     "text/plain"?: { schema: RequestBodySchema };
   };
   name?: "Standard" | "Additional Fields" | "Filters" | "Update Fields";

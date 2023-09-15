@@ -107,10 +107,15 @@ export default class OpenApiStager {
     if (!requestBody) return null;
 
     const urlEncoded = requestBody.content["application/x-www-form-urlencoded"];
+    const json = requestBody.content["application/json"];
     const textPlain = requestBody.content["text/plain"];
 
     if (urlEncoded) {
       this.sanitizeProperties(urlEncoded);
+    }
+
+    if (json) {
+      this.sanitizeProperties(json);
     }
 
     if (textPlain) {

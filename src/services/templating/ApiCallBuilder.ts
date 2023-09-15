@@ -193,14 +193,19 @@ export default class ApiCallBuilder {
   getRequestBodyItemNames(requestBodyItem: OperationRequestBody) {
     const formUrlEncoded =
       requestBodyItem.content["application/x-www-form-urlencoded"];
-
     if (formUrlEncoded) {
       return Object.keys(formUrlEncoded.schema.properties);
     }
 
-    const textPlainContent = requestBodyItem.content["text/plain"];
+    const jsonContent = requestBodyItem.content["application/json"];
+    if (jsonContent) {
+      return Object.keys(jsonContent.schema.properties);
+    }
 
-    if (textPlainContent) return "text/plain";
+    const textPlainContent = requestBodyItem.content["text/plain"];
+    if (textPlainContent) {
+      return "text/plain";
+    }
 
     return null;
   }

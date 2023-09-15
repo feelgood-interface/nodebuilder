@@ -133,22 +133,37 @@ export default class OpenApiStager {
       .toLowerCase();
   }
 
-  private sanitizeProperties(urlEncoded: { schema: RequestBodySchema }) {
-    const properties = Object.keys(urlEncoded.schema.properties);
+  private sanitizeProperties(body: { schema: RequestBodySchema }) {
+    if ("oneOf" in body.schema && body.schema.oneOf) {
+      body.schema = body.schema.oneOf[0];
+    } else if ("anyOf" in body.schema && body.schema.anyOf) {
+      body.schema = body.schema.anyOf[0];
+    } else if ("allOf" in body.schema && body.schema.allOf) {
+      body.schema = this.mergeAllOf(body.schema);
+    }
+
+    if (!body.schema.properties) {
+      return;
+    }
+
+    const properties = Object.keys(body.schema.properties);
     properties.forEach((property) => {
       const sanitizedProperty = camelCase(property.replace(".", " "));
 
       if (sanitizedProperty !== property) {
-        urlEncoded.schema.properties[sanitizedProperty] =
-          urlEncoded.schema.properties[property];
-        delete urlEncoded.schema.properties[property];
+        body.schema.properties[sanitizedProperty] =
+          body.schema.properties[property];
+        delete body.schema.properties[property];
       }
     });
   }
 
   /** Format enum properties as options type */
-  private sanitizeEnumProperties(urlEncoded: { schema: RequestBodySchema }) {
-    const propertyValues = Object.values(urlEncoded.schema.properties);
+  private sanitizeEnumProperties(body: { schema: RequestBodySchema }) {
+    if (!body.schema.properties) {
+      return;
+    }
+    const propertyValues = Object.values(body.schema.properties);
     propertyValues.forEach((value: ParamContent & { enum?: [] }) => {
       if (value.enum) {
         value.type = "options";
@@ -202,29 +217,65 @@ export default class OpenApiStager {
   private processParameters() {
     const parameters = this.extract("parameters");
 
-    parameters.forEach((param) => {
+    parameters.forEach((param: OperationParameter) => {
       if (param.description) {
         param.description = this.escape(param.description);
       }
 
-      // TODO: Type properly
-      // @ts-ignore
       if ("oneOf" in param.schema && param.schema.oneOf) {
-        // @ts-ignore
         param.schema = param.schema.oneOf[0];
       }
 
-      // TODO: Type properly
-      // @ts-ignore
       if ("anyOf" in param.schema && param.schema.anyOf) {
-        // @ts-ignore
         param.schema = param.schema.anyOf[0];
+      }
+
+      if ("allOf" in param.schema && param.schema.allOf) {
+        param.schema = this.mergeAllOf(param.schema);
       }
     });
 
     return parameters.map((field) =>
       field.required ? field : { ...field, required: false }
     );
+  }
+
+  // TODO: fix types
+  private mergeAllOf(schema: any): any {
+    if (!schema || typeof schema !== "object") {
+      return schema;
+    }
+
+    if (Array.isArray(schema.allOf)) {
+      const mergedSchema = {};
+
+      schema.allOf.forEach((subSchema: any) => {
+        const subSchemaCopy = this.mergeAllOf(subSchema);
+        Object.assign(mergedSchema, subSchemaCopy);
+      });
+
+      // Remove the allOf keyword and replace it with the merged schema
+      delete schema.allOf;
+      return Object.assign(mergedSchema, schema);
+    }
+
+    // Recursively merge allOf schemas in properties
+    if (schema.properties) {
+      Object.keys(schema.properties).forEach((prop) => {
+        schema.properties[prop] = this.mergeAllOf(schema.properties[prop]);
+      });
+    }
+
+    // Recursively merge allOf schemas in items (for arrays)
+    if (schema.items) {
+      if (Array.isArray(schema.items)) {
+        schema.items = schema.items.map((item: any) => this.mergeAllOf(item));
+      } else {
+        schema.items = this.mergeAllOf(schema.items);
+      }
+    }
+
+    return schema;
   }
 
   // ----------------------------------

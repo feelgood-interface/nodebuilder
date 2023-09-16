@@ -6,6 +6,7 @@ import { titleCase } from "title-case";
 import { camelCase } from "change-case";
 import pluralize from "pluralize";
 import { inputDir, openApiInputDir, swagger } from "../config";
+import * as _ from "lodash";
 
 export default class OpenApiStager {
   private readonly json: JsonObject & { paths: object };
@@ -323,13 +324,11 @@ export default class OpenApiStager {
       const mergedSchema = {};
 
       schema.allOf.forEach((subSchema: any) => {
-        const subSchemaCopy = this.mergeAllOf(subSchema);
-        Object.assign(mergedSchema, subSchemaCopy);
+        _.merge(mergedSchema, this.mergeAllOf(subSchema));
       });
 
-      // Remove the allOf keyword and replace it with the merged schema
       delete schema.allOf;
-      return Object.assign(mergedSchema, schema);
+      return _.merge(mergedSchema, schema);
     }
 
     // Recursively merge allOf schemas in properties

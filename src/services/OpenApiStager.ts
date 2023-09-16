@@ -443,7 +443,7 @@ export default class OpenApiStager {
   private setEndOfPath(key: OpenApiKey) {
     if (key === "tags") return `*.${key}.*`;
     if (key === "requestMethods") return `*~`;
-    if (key === "operationId" || key === "requestBody")
+    if (key === "operationId" || key === "requestBody" || key === "parameters")
       return `${this.currentMethod}.${key}`;
 
     return `*.${key}`;

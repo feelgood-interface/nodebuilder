@@ -170,7 +170,7 @@ export const <%= helper.camelCase(resourceName) %>Fields: INodeProperties[] = [
 			<%_ if (mimeType === "application/x-www-form-urlencoded" || mimeType === "application/json") { _%>
 			<%_ const schema = rbItem.content[mimeType].schema; _%>
 			<%_ Object.entries(schema.properties).forEach(([key, value]) => { _%>
-			<%_ if (value.type === 'string' || value.type === 'number' || value.type === 'boolean') { _%>
+			<%_ if (value.type === 'string' || value.type === 'number' || value.type === 'boolean' || (value.type === 'object' && !value.properties)) { _%>
 				<%_/**
 				* non-nested field inside extraFields
 				*/_%>

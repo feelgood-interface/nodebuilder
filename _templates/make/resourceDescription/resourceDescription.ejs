@@ -28,7 +28,7 @@ export const <%= helper.camelCase(resourceName) %>Operations: INodeProperties[] 
 
 export const <%= helper.camelCase(resourceName) %>Fields: INodeProperties[] = [
 	<%_ operationsArray.forEach(operation => { _%>
-	<%_ if (operation.parameters) { _%>
+	<%_ if (operation.parameters || operation.requestBody) { _%>
 	<%= builder.resourceDescriptionDivider(resourceName, operation.operationId); %>
 	<%_ } _%>
 	<%_/**

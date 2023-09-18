@@ -2,10 +2,13 @@ import { camelCase, capitalCase, pascalCase } from "change-case";
 import { titleCase } from "title-case";
 
 export class Helper {
-  adjustType = (type: string, name: string) => {
+  adjustType = (type: string, name: string, items?: any): string => {
     if (type === "integer") return "number";
     if (name.toLowerCase().includes("date")) return "dateTime";
     if (type === "object") return "fixedCollection";
+    if (type === "array" && items?.type) {
+      return this.adjustType(items.type, name);
+    }
     return type;
   };
 

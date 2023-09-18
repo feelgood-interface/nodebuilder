@@ -42,11 +42,16 @@ export const <%= helper.camelCase(resourceName) %>Fields: INodeProperties[] = [
 		displayName: '<%= helper.titleCase(param.name); %>',
 		name: '<%= param.name %>',
 		description: '<%- param.description; %>',
-		type: '<%= helper.adjustType(param.schema.type, param.name); %>',
-		<%_ if (helper.hasMinMax(param.schema)) { _%>
+		type: '<%= helper.adjustType(param.schema.type, param.name, param.schema, param.schema.items); %>',
+		<%_ if (helper.hasMinMax(param.schema) || param.schema.type === 'array') { _%>
 		typeOptions: {
+			<%_ if (helper.hasMinMax(param.schema)) { _%>
 			minValue: <%= param.schema.minimum %>,
-			maxValue: <%= param.schema.maximum %>
+			maxValue: <%= param.schema.maximum %>,
+			<%_ } _%>
+			<%_ if (param.schema.type === 'array') { _%>
+			multipleValues: true,
+			<%_ } _%>
 		},
 		<%_ } _%>
 		<%_ if (param.required) { _%>
@@ -73,11 +78,16 @@ export const <%= helper.camelCase(resourceName) %>Fields: INodeProperties[] = [
 					{
 						displayName: '<%= helper.titleCase(subKey) %>',
 						name: '<%= subKey %>',
-						type: '<%= helper.adjustType(subValue.type, subKey); %>',
-						<%_ if (helper.hasMinMax(subValue)) { _%>
+						type: '<%= helper.adjustType(subValue.type, subKey, subValue.items); %>',
+						<%_ if (helper.hasMinMax(subValue) || subValue.type === 'array') { _%>
 						typeOptions: {
+							<%_ if (helper.hasMinMax(subValue)) { _%>
 							minValue: <%= subValue.minimum %>,
-							maxValue: <%= subValue.maximum %>
+							maxValue: <%= subValue.maximum %>,
+							<%_ } _%>
+							<%_ if (subValue.type === 'array') { _%>
+							multipleValues: true,
+							<%_ } _%>
 						},
 						<%_ } _%>
 						default: <%- helper.getDefault(subValue); %>,
@@ -119,11 +129,16 @@ export const <%= helper.camelCase(resourceName) %>Fields: INodeProperties[] = [
 		<%_ if (value.description) { _%>
 		description: '<%- helper.escape(value.description); %>',
 		<%_ } _%>
-		type: '<%= helper.adjustType(value.type, property); %>',
-		<%_ if (helper.hasMinMax(value)) { _%>
+		type: '<%= helper.adjustType(value.type, property, value.items); %>',
+		<%_ if (helper.hasMinMax(value) || value.type === 'array') { _%>
 		typeOptions: {
+			<%_ if (helper.hasMinMax(value)) { _%>
 			minValue: <%= value.minimum %>,
-			maxValue: <%= value.maximum %>
+			maxValue: <%= value.maximum %>,
+			<%_ } _%>
+			<%_ if (value.type === 'array') { _%>
+			multipleValues: true,
+			<%_ } _%>
 		},
 		<%_ } _%>
 		required: true,
@@ -333,11 +348,16 @@ export const <%= helper.camelCase(resourceName) %>Fields: INodeProperties[] = [
 							{
 								displayName: '<%= helper.titleCase(subKey) %>',
 								name: '<%= subKey %>',
-								type: '<%= helper.adjustType(subValue.type, subKey); %>',
-								<%_ if (helper.hasMinMax(subValue)) { _%>
+								type: '<%= helper.adjustType(subValue.type, subKey, subValue.items); %>',
+								<%_ if (helper.hasMinMax(subValue) || subValue.type === 'array') { _%>
 								typeOptions: {
+									<%_ if (helper.hasMinMax(subValue)) { _%>
 									minValue: <%= subValue.minimum %>,
-									maxValue: <%= subValue.maximum %>
+									maxValue: <%= subValue.maximum %>,
+									<%_ } _%>
+									<%_ if (subValue.type === 'array') { _%>
+									multipleValues: true,
+									<%_ } _%>
 								},
 								<%_ } _%>
 								default: <%- helper.getDefault(subValue); %>,

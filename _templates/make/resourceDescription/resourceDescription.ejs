@@ -62,6 +62,31 @@ export const <%= helper.camelCase(resourceName) %>Fields: INodeProperties[] = [
 			<%_ }); _%>
 		],
 		<%_ } _%>
+		<%_ if (param.schema.type === 'object' && param.schema.properties) { _%>
+		placeholder: 'Add <%= helper.titleCase(param.name + " Field") %>',
+		options: [
+			{
+				displayName: '<%= helper.titleCase(param.name + " Fields") %>',
+				name: '<%= helper.addFieldsSuffix(param.name) %>',
+				values: [
+				<%_ Object.entries(param.schema.properties).forEach(([subKey, subValue]) => { _%>
+					{
+						displayName: '<%= helper.titleCase(subKey) %>',
+						name: '<%= subKey %>',
+						type: '<%= helper.adjustType(subValue.type, subKey); %>',
+						<%_ if (helper.hasMinMax(subValue)) { _%>
+						typeOptions: {
+							minValue: <%= subValue.minimum %>,
+							maxValue: <%= subValue.maximum %>
+						},
+						<%_ } _%>
+						default: <%- helper.getDefault(subValue); %>,
+					},
+				<%_ }); _%>
+				],
+			},
+		],
+		<%_ } _%>
 		default: <%- helper.getDefault(param.schema); %>,
 		displayOptions: {
 			show: {

@@ -5,6 +5,7 @@ export class Helper {
   adjustType = (type: string, name: string) => {
     if (type === "integer") return "number";
     if (name.toLowerCase().includes("date")) return "dateTime";
+    if (type === "object") return "fixedCollection";
     return type;
   };
 

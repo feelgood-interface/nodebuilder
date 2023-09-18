@@ -62,9 +62,10 @@ export class Helper {
 
     if (base.toUpperCase() === base) base = base.toLowerCase();
 
-    return str.includes("_")
-      ? titleCase(base).replace("Id", "ID") // for snake case
-      : titleCase(base.replace("Id", " ID")); // for camel case
+    // titleCase doesn't separate string
+    base = capitalCase(base);
+
+    return titleCase(base).replace("Id", "ID");
   };
 
   toTemplateLiteral = (endpoint: string) => endpoint.replace(/{/g, "${");

@@ -292,9 +292,11 @@ export default class OpenApiStager {
       param.schema = this.mergeOneOf(param.schema);
     });
 
-    return parameters.map((field) =>
-      field.required ? field : { ...field, required: false }
-    );
+    parameters.sort((a, b) => a.name.localeCompare(b.name));
+
+    return parameters
+      .map((field) => (field.required ? field : { ...field, required: false }))
+      .sort();
   }
 
   // TODO: fix types

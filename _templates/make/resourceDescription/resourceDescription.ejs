@@ -217,7 +217,7 @@ export const <%= helper.camelCase(resourceName) %>Fields: INodeProperties[] = [
 			{
 				displayName: '<%= helper.titleCase(key); %>',
 				name: '<%= key %>',
-				type: '<%= helper.adjustType(value.type, key, value.items); %>',
+				type: '<%= helper.adjustType(value.type, key, value.items, value.properties); %>',
 				default: <%- helper.getDefault(value); %>,
 				<%_ if (value.description) { _%>
 				description: '<%- helper.escape(value.description) %>',

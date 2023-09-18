@@ -86,6 +86,7 @@ type PathQuerySchema = {
   minimum?: number;
   maximum?: number;
   options?: string[]; // from custom spec in YAML
+  enum?: string[];
 };
 
 type OperationRequestBody = {

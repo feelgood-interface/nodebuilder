@@ -290,6 +290,12 @@ export default class OpenApiStager {
       param.schema = this.mergeAllOf(param.schema);
       param.schema = this.mergeAnyOf(param.schema);
       param.schema = this.mergeOneOf(param.schema);
+
+      if (param.schema.enum) {
+        param.schema.type = "options";
+        param.schema.options = param.schema.enum;
+        delete param.schema.enum;
+      }
     });
 
     parameters.sort((a, b) => a.name.localeCompare(b.name));

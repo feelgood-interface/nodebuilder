@@ -104,7 +104,7 @@ export default class OpenApiStager {
       .trim();
   }
 
-  private processRequestBody() {
+  private processRequestBody(): OperationRequestBody[] | null {
     const requestBody = this.extract("requestBody");
 
     if (!requestBody) return null;
@@ -115,19 +115,70 @@ export default class OpenApiStager {
 
     if (urlEncoded) {
       this.sanitizeProperties(urlEncoded);
-      this.sanitizeEnumProperties(urlEncoded);
     }
 
     if (json) {
       this.sanitizeProperties(json);
-      this.sanitizeEnumProperties(json);
     }
 
     if (textPlain) {
       this.setTextPlainProperty(requestBody);
     }
 
-    return [{ name: "Standard", ...requestBody } as const];
+    const fieldsName = ["PUT", "PATCH"].includes(
+      this.currentMethod.toUpperCase()
+    )
+      ? "Update Fields"
+      : "Additional Fields";
+
+    const requiredBody: OperationRequestBody = {
+      name: "Standard",
+      content: {},
+      required: true,
+    };
+    if (urlEncoded && urlEncoded.schema?.required?.length) {
+      for (const key of Object.keys(urlEncoded.schema.properties)) {
+        if (urlEncoded.schema.required.includes(key)) {
+          requiredBody.content[
+            "application/x-www-form-urlencoded"
+          ]!.schema.properties[key] = urlEncoded.schema.properties[key];
+
+          delete urlEncoded.schema.properties[key];
+        }
+      }
+    }
+    if (json && json.schema?.required?.length) {
+      requiredBody.content["application/json"] = {
+        schema: { type: json.schema.type, properties: {} },
+      };
+      for (const key of Object.keys(json.schema.properties)) {
+        if (json.schema.required.includes(key)) {
+          requiredBody.content["application/json"]!.schema.properties[key] =
+            json.schema.properties[key];
+
+          delete json.schema.properties[key];
+        }
+      }
+    }
+    if (textPlain && textPlain.schema?.required?.length) {
+      for (const key of Object.keys(textPlain.schema.properties)) {
+        if (textPlain.schema.required.includes(key)) {
+          requiredBody.content[
+            "application/x-www-form-urlencoded"
+          ]!.schema.properties[key] = textPlain.schema.properties[key];
+
+          delete textPlain.schema.properties[key];
+        }
+      }
+      requiredBody.textPlainProperty = requestBody.textPlainProperty;
+    }
+
+    const operationBody = [
+      requiredBody,
+      { name: fieldsName, ...requestBody } as const,
+    ];
+
+    return operationBody;
   }
 
   private setTextPlainProperty(requestBody: OperationRequestBody) {
@@ -146,7 +197,8 @@ export default class OpenApiStager {
       return;
     }
 
-    body.schema = this.removeReadOnlyOrWriteOnlyProperties(body.schema);
+    this.removeReadOnlyOrWriteOnlyProperties(body.schema);
+    this.sanitizeEnumProperties(body.schema);
 
     const properties = Object.keys(body.schema.properties);
     properties.forEach((property) => {
@@ -161,12 +213,12 @@ export default class OpenApiStager {
   }
 
   /** Format enum properties as options type */
-  private sanitizeEnumProperties(body: { schema: RequestBodySchema }) {
-    if (!body.schema.properties) {
-      body.schema.properties = {};
+  private sanitizeEnumProperties(schema: RequestBodySchema) {
+    if (!schema.properties) {
+      schema.properties = {};
       return;
     }
-    const propertyValues = Object.values(body.schema.properties);
+    const propertyValues = Object.values(schema.properties);
     propertyValues.forEach((value: ParamContent & { enum?: [] }) => {
       if (value.enum) {
         value.type = "options";

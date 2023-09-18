@@ -193,7 +193,6 @@ export default class OpenApiStager {
     body.schema = this.mergeOneOf(body.schema);
 
     if (!body.schema.properties) {
-      body.schema.properties = {};
       return;
     }
 
@@ -222,7 +221,6 @@ export default class OpenApiStager {
   /** Format enum properties as options type */
   private sanitizeEnumProperties(schema: RequestBodySchema) {
     if (!schema.properties) {
-      schema.properties = {};
       return;
     }
     const propertyValues = Object.values(schema.properties);

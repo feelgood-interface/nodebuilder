@@ -122,7 +122,7 @@ export const <%= helper.camelCase(resourceName) %>Fields: INodeProperties[] = [
 	<%_ Object.keys(rbItem.content).forEach((mimeType) => { _%>
 	<%_ if (mimeType === "application/x-www-form-urlencoded" || mimeType === "application/json") { _%>
 	<%_ const properties = rbItem.content[mimeType].schema.properties; _%>
-	<%_ Object.entries(properties).forEach(([property, value]) => { _%>
+	<%_ Object.entries(properties || {}).forEach(([property, value]) => { _%>
 	{
 		displayName: '<%= helper.titleCase(property); %>',
 		name: '<%= helper.camelCase(property) %>',
@@ -209,7 +209,7 @@ export const <%= helper.camelCase(resourceName) %>Fields: INodeProperties[] = [
 			<%_ Object.keys(rbItem.content).forEach((mimeType) => { _%>
 			<%_ if (mimeType === "application/x-www-form-urlencoded" || mimeType === "application/json") { _%>
 			<%_ const schema = rbItem.content[mimeType].schema; _%>
-			<%_ Object.entries(schema.properties).forEach(([key, value]) => { _%>
+			<%_ Object.entries(schema.properties || {}).forEach(([key, value]) => { _%>
 			<%_ if (['string', 'number', 'boolean', 'dateTime'].includes(helper.adjustType(value.type, key, value.items)) || (value.type === 'object' && !value.properties)) { _%>
 				<%_/**
 				* non-nested field inside extraFields

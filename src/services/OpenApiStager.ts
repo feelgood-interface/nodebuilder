@@ -373,6 +373,14 @@ export default class OpenApiStager {
     return schema;
   }
 
+  private customMerge(object1: {}, object2: {}) {
+    return _.mergeWith(object1, object2, (value1, value2) => {
+      if (_.isArray(value1) && _.isArray(value2)) {
+        return _.concat(value1, value2);
+      }
+    });
+  }
+
   // TODO: fix types
   /** Merge schemas */
   private mergeAllOf(schema: any): any {
@@ -384,11 +392,11 @@ export default class OpenApiStager {
       const mergedSchema = {};
 
       schema.allOf.forEach((subSchema: any) => {
-        _.merge(mergedSchema, this.mergeAllOf(subSchema));
+        this.customMerge(mergedSchema, this.mergeAllOf(subSchema));
       });
 
       delete schema.allOf;
-      return _.merge(mergedSchema, schema);
+      return this.customMerge(mergedSchema, schema);
     }
 
     // Recursively merge allOf schemas in properties

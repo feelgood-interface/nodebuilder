@@ -210,6 +210,13 @@ export default class OpenApiStager {
         delete body.schema.properties[property];
       }
     });
+
+    body.schema.properties = Object.keys(body.schema.properties)
+      .sort()
+      .reduce((obj: { [propertyName: string]: ParamContent }, key: string) => {
+        obj[key] = body.schema.properties[key];
+        return obj;
+      }, {});
   }
 
   /** Format enum properties as options type */

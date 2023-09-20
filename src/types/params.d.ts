@@ -87,6 +87,9 @@ type PathQuerySchema = {
   maximum?: number;
   options?: string[]; // from custom spec in YAML
   enum?: string[];
+  properties?: {
+    [propertyName: string]: ParamContent;
+  };
 };
 
 type OperationRequestBody = {

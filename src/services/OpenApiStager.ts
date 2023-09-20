@@ -305,9 +305,35 @@ export default class OpenApiStager {
 
     parameters.sort((a, b) => a.name.localeCompare(b.name));
 
-    return parameters
+    parameters = parameters
       .map((field) => (field.required ? field : { ...field, required: false }))
       .sort();
+
+    const queryParameters = parameters.filter((x) => x.in === "query");
+    const outputQueryParameters = [
+      ...queryParameters.filter((x) => x.required),
+    ];
+    if (queryParameters.some((x) => !x.required)) {
+      outputQueryParameters.push({
+        in: "query",
+        name: "Query",
+        schema: {
+          type: "object",
+          properties: queryParameters
+            .filter((x) => !x.required)
+            .reduce(
+              (result, item) => ({ ...result, [item.name]: item.schema }),
+              {}
+            ),
+          default: "",
+        },
+      });
+    }
+
+    return [
+      ...parameters.filter((x) => x.in !== "query"),
+      ...outputQueryParameters,
+    ];
   }
 
   // TODO: fix types

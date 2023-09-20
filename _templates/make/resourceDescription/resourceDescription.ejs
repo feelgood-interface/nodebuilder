@@ -378,7 +378,7 @@ export const <%= helper.camelCase(resourceName) %>Fields: INodeProperties[] = [
 	<%_ }); _%> <%#_ end rbItem loop _%>
 	<%_ } _%> <%#_ end requestBody if _%>
 	<%_ if (operation.operationId === 'getAll') { _%>
-	<%- builder.getAllAdditions(resourceName, operation.operationId); %>
+	<%- builder.getAllAdditions(helper.camelCase(resourceName), helper.camelCase(operation.operationId)); %>
 	<%_ } _%>
 <%_ }); _%> <%#_ end operations loop _%>
 ];

@@ -1,3 +1,5 @@
+import { camelCase } from "change-case";
+
 export default class DividerBuilder {
   isFirstOperation = true;
 
@@ -43,10 +45,7 @@ export default class DividerBuilder {
   }
 
   resourceDescriptionDivider(resourceName: string, operationId: string) {
-    const divider = this.dividerLines(
-      resourceName.charAt(0).toLowerCase() + resourceName.slice(1),
-      operationId
-    ).join("\n\t");
+    const divider = this.dividerLines(resourceName, operationId).join("\n\t");
 
     if (this.isFirstOperation) {
       this.isFirstOperation = false;
@@ -59,7 +58,7 @@ export default class DividerBuilder {
   dividerLines(resourceName: string, operationId: string) {
     const OPERATION_DIVIDER_LENGTH = 40;
 
-    const title = `${resourceName}: ${operationId}`;
+    const title = `${camelCase(resourceName)}: ${camelCase(operationId)}`;
     const padLengthCandidate = Math.floor(
       (OPERATION_DIVIDER_LENGTH - title.length) / 2
     );

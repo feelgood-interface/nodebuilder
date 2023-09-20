@@ -264,9 +264,41 @@ export default class OpenApiStager {
       return lastWord.endsWith("s") ? "getAll" : extracted;
     }
 
-    if (extracted.startsWith("edit")) return "update";
+    const tag = (jsonQuery({
+      json: this.json,
+      path: `$.paths.[${this.currentEndpoint}].*.tags.*`,
+    }) as string[])[0];
 
-    if (extracted.startsWith("add")) return "create";
+    const allTagOperations = (jsonQuery({
+      json: this.json,
+      path: `$.paths.*.*`,
+    }) as any[])
+      .filter((x) => x.tags?.includes(tag))
+      .map((x) => x.operationId);
+
+    if (extracted.startsWith("edit")) {
+      if (allTagOperations.filter((x) => x.startsWith("edit")).length > 1) {
+        return extracted.replace("edit", "update");
+      } else {
+        return "update";
+      }
+    }
+
+    if (extracted.startsWith("add")) {
+      if (allTagOperations.filter((x) => x.startsWith("add")).length > 1) {
+        return extracted.replace("add", "create");
+      } else {
+        return "create";
+      }
+    }
+
+    if (extracted.startsWith("fetchAll")) {
+      if (allTagOperations.filter((x) => x.startsWith("fetchAll")).length > 1) {
+        return extracted.replace("fetchAll", "getAll");
+      } else {
+        return "getAll";
+      }
+    }
 
     const surplusPart = this.currentResource.replace(" ", "");
     const surplusRegex = new RegExp(surplusPart, "g");

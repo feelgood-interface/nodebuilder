@@ -81,7 +81,7 @@ export class <%= helper.pascalCase(metaParams.serviceName); %> implements INodeT
 					<%_ operationsArray.forEach(operation => { _%>
 					<%- builder.operationBranch(resourceName, operation); %>
 
-						<%= builder.operationDivider(helper.camelCase(resourceName), operation.operationId, operation.operationUrl); %>
+						<%= builder.operationDivider(helper.camelCase(resourceName), helper.camelCase(operation.operationId), operation.operationUrl); %>
 
 						<%- builder.apiCall(operation); _%>
 

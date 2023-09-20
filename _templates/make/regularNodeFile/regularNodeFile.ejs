@@ -64,7 +64,7 @@ export class <%= helper.pascalCase(metaParams.serviceName); %> implements INodeT
 
 	async execute(this: IExecuteFunctions): Promise<INodeExecutionData[][]> {
 		const items = this.getInputData();
-		const returnData: IDataObject[] = [];
+		const returnData: INodeExecutionData[] = [];
 
 		const resource = this.getNodeParameter('resource', 0) as string;
 		const operation = this.getNodeParameter('operation', 0) as string;
@@ -72,31 +72,43 @@ export class <%= helper.pascalCase(metaParams.serviceName); %> implements INodeT
 		let responseData;
 
 		for (let i = 0; i < items.length; i++) {
-			<%_ builder.resourceTuples.forEach(([resourceName, operationsArray]) => { %>
-			<%- builder.resourceBranch(resourceName); %>
+			try {
+				<%_ builder.resourceTuples.forEach(([resourceName, operationsArray]) => { %>
+				<%- builder.resourceBranch(resourceName); %>
 
-				<%= builder.resourceDivider(helper.camelCase(resourceName)); %>
+					<%= builder.resourceDivider(helper.camelCase(resourceName)); %>
 
-				<%_ operationsArray.forEach(operation => { _%>
-				<%- builder.operationBranch(resourceName, operation); %>
+					<%_ operationsArray.forEach(operation => { _%>
+					<%- builder.operationBranch(resourceName, operation); %>
 
-					<%= builder.operationDivider(helper.camelCase(resourceName), operation.operationId, operation.operationUrl); %>
+						<%= builder.operationDivider(helper.camelCase(resourceName), operation.operationId, operation.operationUrl); %>
 
-					<%- builder.apiCall(operation); _%>
+						<%- builder.apiCall(operation); _%>
 
-				<%- builder.operationError(resourceName, operation, { enabled: false }); _%>
+					<%- builder.operationError(resourceName, operation, { enabled: false }); _%>
 
-			<%_ }); _%> <%#_ end operationsArray loop _%>
-			<%- builder.resourceError(resourceName, { enabled: false }); _%>
-			<%_ }); _%> <%#_ end resourceTuples loop _%>
+				<%_ }); _%> <%#_ end operationsArray loop _%>
+				<%- builder.resourceError(resourceName, { enabled: false }); _%>
+				<%_ }); _%> <%#_ end resourceTuples loop _%>
 
-
-			Array.isArray(responseData)
-				? returnData.push(...responseData)
-				: returnData.push(responseData);
-
+				const executionData = this.helpers.constructExecutionMetaData(
+					this.helpers.returnJsonArray(responseData as IDataObject),
+					{ itemData: { item: i } },
+				);
+				returnData.push(...executionData);
+			} catch(error) {
+				if (this.continueOnFail()) {
+					const executionErrorData = this.helpers.constructExecutionMetaData(
+						this.helpers.returnJsonArray({ error: error.message }),
+						{ itemData: { item: i } },
+					);
+					returnData.push(...executionErrorData);
+					continue;
+				}
+				throw error;
+			}
 		}
 
-		return [this.helpers.returnJsonArray(returnData)];
+		return this.prepareOutputData(returnData);
 	}
 } <%# end class %>

@@ -99,17 +99,6 @@ export default class ApiCallBuilder {
       qsParams
     );
 
-    // TODO: This is only for filters. Add variants for other extra fields.
-    if (extraQsParams.length) {
-      this.lines.push(
-        "const qs = {} as IDataObject;",
-        "const filters = this.getNodeParameter('filters', i) as IDataObject;\n",
-        "if (Object.keys(filters).length) {",
-        `\tObject.assign(qs, filters);`,
-        "}\n"
-      );
-    }
-
     if (requiredQsParams.length) {
       this.lines.push("const qs: IDataObject = {");
       this.lines.push(
@@ -119,6 +108,20 @@ export default class ApiCallBuilder {
       );
       this.lines.push("};");
       this.addNewLine(this.lines);
+    }
+
+    // TODO: This is only for filters. Add variants for other extra fields.
+    if (extraQsParams.length) {
+      if (!requiredQsParams.length) {
+        this.lines.push("const qs = {} as IDataObject;");
+      }
+      // Will only add first extra paramerter
+      this.lines.push(
+        `const ${extraQsParams[0].name} = this.getNodeParameter('${extraQsParams[0].name}', i) as IDataObject;\n`,
+        `if (Object.keys(${extraQsParams[0].name}).length) {`,
+        `\tObject.assign(qs, ${extraQsParams[0].name});`,
+        "}\n"
+      );
     }
   }
 

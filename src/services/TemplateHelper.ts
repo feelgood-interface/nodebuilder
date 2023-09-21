@@ -2,6 +2,7 @@ import { camelCase, capitalCase, pascalCase } from "change-case";
 import { titleCase } from "title-case";
 
 export class Helper {
+  // TODO: check format === "date-time"
   adjustType = (
     type: string,
     name: string,
@@ -41,6 +42,10 @@ export class Helper {
       ) {
         return 0;
       }
+
+      if (arg.type === "object") return {};
+
+      if (arg.type === "array") return [];
     }
 
     if (

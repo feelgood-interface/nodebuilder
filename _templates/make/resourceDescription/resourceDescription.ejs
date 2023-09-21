@@ -41,7 +41,7 @@ export const <%= helper.camelCase(resourceName) %>Fields: INodeProperties[] = [
 	<%_ operation.parameters.forEach(param => { _%>
 	{
 		displayName: '<%= helper.titleCase(param.name); %>',
-		name: '<%= param.name %>',
+		name: '<%= param.name; %>',
 		description: '<%- param.description; %>',
 		type: '<%= helper.adjustType(param.schema.type, param.name, param.schema, param.schema.items); %>',
 		<%_ if (helper.hasMinMax(param.schema) || param.schema.type === 'array') { _%>
@@ -71,31 +71,25 @@ export const <%= helper.camelCase(resourceName) %>Fields: INodeProperties[] = [
 		<%_ if (param.schema.type === 'object' && param.schema.properties) { _%>
 		placeholder: 'Add <%= helper.titleCase(param.name + " Field") %>',
 		options: [
-			{
-				displayName: '<%= helper.titleCase(param.name + " Fields") %>',
-				name: '<%= helper.addFieldsSuffix(param.name) %>',
-				values: [
-				<%_ Object.entries(param.schema.properties).forEach(([subKey, subValue]) => { _%>
-					{
-						displayName: '<%= helper.titleCase(subKey) %>',
-						name: '<%= subKey %>',
-						type: '<%= helper.adjustType(subValue.type, subKey, subValue.items); %>',
-						<%_ if (helper.hasMinMax(subValue) || subValue.type === 'array') { _%>
-						typeOptions: {
-							<%_ if (helper.hasMinMax(subValue)) { _%>
-							minValue: <%= subValue.minimum %>,
-							maxValue: <%= subValue.maximum %>,
-							<%_ } _%>
-							<%_ if (subValue.type === 'array') { _%>
-							multipleValues: true,
-							<%_ } _%>
-						},
+			<%_ Object.entries(param.schema.properties).forEach(([subKey, subValue]) => { _%>
+				{
+					displayName: '<%= helper.titleCase(subKey) %>',
+					name: '<%= subKey %>',
+					type: '<%= helper.adjustType(subValue.type, subKey, subValue.items); %>',
+					<%_ if (helper.hasMinMax(subValue) || subValue.type === 'array') { _%>
+					typeOptions: {
+						<%_ if (helper.hasMinMax(subValue)) { _%>
+						minValue: <%= subValue.minimum %>,
+						maxValue: <%= subValue.maximum %>,
 						<%_ } _%>
-						default: <%- helper.getDefault(subValue); %>,
+						<%_ if (subValue.type === 'array') { _%>
+						multipleValues: true,
+						<%_ } _%>
 					},
-				<%_ }); _%>
-				],
-			},
+					<%_ } _%>
+					default: <%- helper.getDefault(subValue); %>,
+				},
+			<%_ }); _%>
 		],
 		<%_ } _%>
 		default: <%- helper.getDefault(param.schema); %>,

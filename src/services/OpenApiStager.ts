@@ -187,8 +187,10 @@ export default class OpenApiStager {
       }
     }
 
-    const operationBody = [requiredBody];
-
+    const operationBody = [];
+    if (Object.keys(requiredBody.content).length > 0) {
+      operationBody.push(requiredBody);
+    }
     if (Object.keys(requestBody.content).length > 0) {
       operationBody.push({
         name: fieldsName,
@@ -367,7 +369,7 @@ export default class OpenApiStager {
     if (queryParameters.some((x) => !x.required)) {
       outputQueryParameters.push({
         in: "query",
-        name: "Query",
+        name: "query",
         schema: {
           type: "object",
           properties: queryParameters

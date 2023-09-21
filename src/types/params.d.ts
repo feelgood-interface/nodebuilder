@@ -156,6 +156,6 @@ type OpenApiKey = StringArrayKey | StringKey | CustomObjectKey;
 
 type StringArrayKey = "tags" | "requestMethods";
 
-type StringKey = "description" | "operationId";
+type StringKey = "description" | "operationId" | "summary";
 
 type CustomObjectKey = "parameters" | "requestBody";

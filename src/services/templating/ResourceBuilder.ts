@@ -6,13 +6,16 @@ export default class ResourceBuilder {
   public operationsOptions(operations: Operation[]) {
     operations.sort((a, b) => a.operationId.localeCompare(b.operationId));
 
-    operations.forEach(({ operationId, description }, index) => {
+    operations.forEach(({ operationId, description, summary }, index) => {
       this.createLine("{", { tabs: !index ? 0 : 3 });
 
       this.createLine(`name: '${capitalCase(operationId)}',`, { tabs: 4 });
       this.createLine(`value: '${camelCase(operationId)}',`, { tabs: 4 });
       if (description) {
         this.createLine(`description: '${description}',`, { tabs: 4 });
+      }
+      if (summary) {
+        this.createLine(`action: '${summary}',`, { tabs: 4 });
       }
 
       this.createLine("},", { tabs: 3 });

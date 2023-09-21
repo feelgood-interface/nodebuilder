@@ -96,6 +96,12 @@ export default class OpenApiStager {
     if (description) return this.escape(description);
   }
 
+  private processSummary() {
+    const summary = this.extract("summary");
+
+    if (summary) return this.escape(summary);
+  }
+
   private escape(description: string) {
     return description
       .replace(/\n/g, " ")
@@ -264,10 +270,12 @@ export default class OpenApiStager {
     const parameters = this.processParameters();
     const requestBody = this.processRequestBody();
     const description = this.processDescription();
+    const summary = this.processSummary();
 
     if (parameters.length) operation.parameters = parameters;
     if (requestBody?.length) operation.requestBody = requestBody;
     if (description) operation.description = description;
+    if (summary) operation.summary = summary;
 
     return operation;
   }
@@ -551,7 +559,9 @@ export default class OpenApiStager {
    * Based on [JSON Path Plus](https://github.com/JSONPath-Plus/JSONPath).
    *
    * Note: The square brackets escape chars in the endpoint.*/
-  private extract(key: "description" | "operationId"): string | undefined;
+  private extract(
+    key: "description" | "operationId" | "summary"
+  ): string | undefined;
   private extract(key: "tags" | "requestMethods"): string[];
   private extract(key: "parameters"): OperationParameter[];
   private extract(key: "requestBody"): OperationRequestBody | null;
@@ -568,7 +578,8 @@ export default class OpenApiStager {
       (key === "parameters" && result.length) ||
       key === "description" ||
       key === "operationId" ||
-      (key === "requestBody" && result.length);
+      (key === "requestBody" && result.length) ||
+      key === "summary";
 
     if (hasExtraNesting) return result[0];
 

@@ -146,6 +146,11 @@ export default class OpenApiStager {
           delete urlEncoded.schema.properties[key];
         }
       }
+
+      delete urlEncoded.schema.required;
+      if (Object.keys(urlEncoded.schema.properties).length === 0) {
+        delete requestBody.content["application/x-www-form-urlencoded"];
+      }
     }
     if (json && json.schema?.required?.length) {
       requiredBody.content["application/json"] = {
@@ -159,6 +164,11 @@ export default class OpenApiStager {
           delete json.schema.properties[key];
         }
       }
+
+      delete json.schema.required;
+      if (Object.keys(json.schema.properties).length === 0) {
+        delete requestBody.content["application/json"];
+      }
     }
     if (textPlain && textPlain.schema?.required?.length) {
       for (const key of Object.keys(textPlain.schema.properties)) {
@@ -171,12 +181,21 @@ export default class OpenApiStager {
         }
       }
       requiredBody.textPlainProperty = requestBody.textPlainProperty;
+      delete textPlain.schema.required;
+      if (Object.keys(textPlain.schema.properties).length === 0) {
+        delete requestBody.content["text/plain"];
+      }
     }
 
-    const operationBody = [
-      requiredBody,
-      { name: fieldsName, ...requestBody } as const,
-    ];
+    const operationBody = [requiredBody];
+
+    if (Object.keys(requestBody.content).length > 0) {
+      operationBody.push({
+        name: fieldsName,
+        ...requestBody,
+        required: false,
+      } as const);
+    }
 
     return operationBody;
   }

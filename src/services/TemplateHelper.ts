@@ -42,10 +42,6 @@ export class Helper {
       ) {
         return 0;
       }
-
-      if (arg.type === "object") return {};
-
-      if (arg.type === "array") return [];
     }
 
     if (
@@ -57,6 +53,8 @@ export class Helper {
     if (arg.type === "number" || arg.type === "integer") return 0;
     if (arg.type === "boolean") return false;
     if (arg.type === "options") return `'${arg.options[0]}'`;
+    if (arg.type === "object") return "{}";
+    if (arg.type === "array") return "[]";
 
     return "''";
   }

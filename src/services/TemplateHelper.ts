@@ -11,6 +11,8 @@ export class Helper {
   ): string => {
     if (type === "integer") return "number";
     if (name.toLowerCase().includes("date")) return "dateTime";
+    if (type === "object" && properties && name === "query")
+      return "collection";
     if (type === "object" && properties) return "fixedCollection";
     if (type === "object" && !properties) return "json";
     if (type === "array" && items?.type) {

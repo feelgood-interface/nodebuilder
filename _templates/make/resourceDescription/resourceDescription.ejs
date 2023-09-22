@@ -124,7 +124,7 @@ export const <%= helper.camelCase(resourceName) %>Fields: INodeProperties[] = [
 		<%_ if (value.description) { _%>
 		description: '<%- helper.escape(value.description); %>',
 		<%_ } _%>
-		type: '<%= helper.adjustType(value.type, property, value.items); %>',
+		type: '<%= helper.adjustType(value.type, property, value.items, value.properties); %>',
 		<%_ if (helper.hasMinMax(value) || value.type === 'array') { _%>
 		typeOptions: {
 			<%_ if (helper.hasMinMax(value)) { _%>
@@ -148,6 +148,36 @@ export const <%= helper.camelCase(resourceName) %>Fields: INodeProperties[] = [
 			<%_ }); _%>
 		],
 		<%_ } _%>
+		<%_ if (value.type === 'object' && value.properties) { _%>
+			placeholder: 'Add <%= helper.titleCase(property + " Field") %>',
+			options: [
+				{
+					displayName: '<%= helper.titleCase(property + " Fields") %>',
+					name: '<%= helper.addFieldsSuffix(property) %>',
+					values: [
+					<%_ Object.entries(value.properties).forEach(([subKey, subValue]) => { _%>
+						{
+							displayName: '<%= helper.titleCase(subKey) %>',
+							name: '<%= subKey %>',
+							type: '<%= helper.adjustType(subValue.type, subKey, subValue.items); %>',
+							<%_ if (helper.hasMinMax(subValue) || subValue.type === 'array') { _%>
+							typeOptions: {
+								<%_ if (helper.hasMinMax(subValue)) { _%>
+								minValue: <%= subValue.minimum %>,
+								maxValue: <%= subValue.maximum %>,
+								<%_ } _%>
+								<%_ if (subValue.type === 'array') { _%>
+								multipleValues: true,
+								<%_ } _%>
+							},
+							<%_ } _%>
+							default: <%- helper.getDefault(subValue); %>,
+						},
+					<%_ }); _%>
+					]
+				}
+			],
+			<%_ } _%>
 		displayOptions: {
 			show: {
 				resource: [

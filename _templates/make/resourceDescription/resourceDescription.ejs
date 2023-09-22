@@ -43,7 +43,7 @@ export const <%= helper.camelCase(resourceName) %>Fields: INodeProperties[] = [
 		displayName: '<%= helper.titleCase(param.name); %>',
 		name: '<%= param.name; %>',
 		description: '<%- param.description; %>',
-		type: '<%= helper.adjustType(param.schema.type, param.name, param.schema, param.schema.items); %>',
+		type: '<%= helper.adjustType(param.schema.type, param.name, param.schema, param.schema.properties); %>',
 		<%_ if (helper.hasMinMax(param.schema) || param.schema.type === 'array') { _%>
 		typeOptions: {
 			<%_ if (helper.hasMinMax(param.schema)) { _%>

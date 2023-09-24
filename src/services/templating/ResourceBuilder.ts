@@ -3,6 +3,7 @@ import { Helper } from '../TemplateHelper';
 
 export default class ResourceBuilder {
 	lines: string[] = [];
+	helper = new Helper();
 
 	public operationsOptions(operations: Operation[]) {
 		operations.sort((a, b) => a.operationId.localeCompare(b.operationId));
@@ -16,7 +17,7 @@ export default class ResourceBuilder {
 				this.createLine(`description: '${description}',`, { tabs: 4 });
 			}
 			if (summary) {
-				this.createLine(`action: '${summary}',`, { tabs: 4 });
+				this.createLine(`action: '${this.helper.escape(summary as string)}',`, { tabs: 4 });
 			}
 
 			this.createLine('},', { tabs: 3 });
@@ -41,32 +42,31 @@ export default class ResourceBuilder {
 	}
 
 	public generateFields(key: string, schema: any): string {
-		const helper = new Helper();
 		const lines = ['{'];
 		if (schema.type === 'object' && schema.properties) {
-			lines.push(`displayName: '${helper.titleCase(key)}',`);
+			lines.push(`displayName: '${this.helper.titleCase(key)}',`);
 			lines.push(`name: '${key}',`);
-			lines.push(`placeholder: 'Add ${helper.titleCase(key)} Field',`);
+			lines.push(`placeholder: 'Add ${this.helper.titleCase(key)} Field',`);
 			lines.push("type: 'fixedCollection',");
 			lines.push('default: {},');
 			if (schema.description) {
-				lines.push(`description: '${helper.escape(schema.description)}',`);
+				lines.push(`description: '${this.helper.escape(schema.description)}',`);
 			}
 			lines.push('options: [{');
-			lines.push(`displayName: '${helper.titleCase(key)} Fields',`);
-			lines.push(`name: '${helper.addFieldsSuffix(key)}',`);
+			lines.push(`displayName: '${this.helper.titleCase(key)} Fields',`);
+			lines.push(`name: '${this.helper.addFieldsSuffix(key)}',`);
 			lines.push('values: [');
 			Object.entries(schema.properties).forEach(([subKey, subValue]) => {
 				lines.push(this.generateFields(subKey, subValue));
 			});
 			lines.push(']}],');
 		} else {
-			lines.push(`displayName: '${helper.titleCase(key)}',`);
+			lines.push(`displayName: '${this.helper.titleCase(key)}',`);
 			lines.push(`name: '${key}',`);
-			lines.push(`type: '${helper.adjustType(schema, key)}',`);
-			if (helper.hasMinMax(schema) || schema.type === 'array') {
+			lines.push(`type: '${this.helper.adjustType(schema, key)}',`);
+			if (this.helper.hasMinMax(schema) || schema.type === 'array') {
 				lines.push('typeOptions: {');
-				if (helper.hasMinMax(schema)) {
+				if (this.helper.hasMinMax(schema)) {
 					lines.push(`minValue: ${schema.minimum},`);
 					lines.push(`maxValue: ${schema.maximum},`);
 				}
@@ -79,15 +79,15 @@ export default class ResourceBuilder {
 				lines.push('options: [');
 				for (const option of schema.options) {
 					lines.push('{');
-					lines.push(`name: '${helper.titleCase(option)}',`);
+					lines.push(`name: '${this.helper.titleCase(option)}',`);
 					lines.push(`value: '${option}',`);
 					lines.push('},');
 				}
 				lines.push('],');
 			}
-			lines.push(`default: ${helper.getDefault(schema)},`);
+			lines.push(`default: ${this.helper.getDefault(schema)},`);
 			if (schema.description) {
-				lines.push(`description: '${helper.escape(schema.description)}',`);
+				lines.push(`description: '${this.helper.escape(schema.description)}',`);
 			}
 		}
 		lines.push('},');

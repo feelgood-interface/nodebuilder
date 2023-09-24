@@ -225,6 +225,10 @@ export default class OpenApiStager {
 			}
 		});
 
+		if (body.schema?.required?.length) {
+			body.schema.required = body.schema.required.map((x) => camelCase(x.replace('.', ' ')));
+		}
+
 		body.schema.properties = Object.keys(body.schema.properties)
 			.sort()
 			.reduce((obj: { [propertyName: string]: ParamContent }, key: string) => {

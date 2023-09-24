@@ -3,15 +3,15 @@
 // ----------------------------------
 
 type ApiMap = {
-  [key: string]: ApiMapOperation[];
+	[key: string]: ApiMapOperation[];
 };
 
 type ApiMapOperation = {
-  ATTENTION?: string;
-  nodeOperation: string;
-  requestMethod;
-  endpoint: string;
-  IRREGULAR?: string;
+	ATTENTION?: string;
+	nodeOperation: string;
+	requestMethod;
+	endpoint: string;
+	IRREGULAR?: string;
 };
 
 type TreeView = string;

@@ -2,13 +2,7 @@
 //              JSON
 // ----------------------------------
 
-type JsonValue =
-  | string
-  | number
-  | boolean
-  | null
-  | Array<JsonValue>
-  | JsonObject;
+type JsonValue = string | number | boolean | null | Array<JsonValue> | JsonObject;
 
 type JsonObject = { [key: string]: JsonValue };
 
@@ -17,7 +11,7 @@ type JsonObject = { [key: string]: JsonValue };
 // ----------------------------------
 
 type PackageJson = {
-  n8n: {
-    nodes: string[];
-  };
+	n8n: {
+		nodes: string[];
+	};
 };

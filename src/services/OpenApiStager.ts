@@ -135,6 +135,9 @@ export default class OpenApiStager {
 			required: true,
 		};
 		if (urlEncoded && urlEncoded.schema?.required?.length) {
+			requiredBody.content['application/x-www-form-urlencoded'] = {
+				schema: { type: urlEncoded.schema.type, properties: {} },
+			};
 			for (const key of Object.keys(urlEncoded.schema.properties)) {
 				if (urlEncoded.schema.required.includes(key)) {
 					requiredBody.content['application/x-www-form-urlencoded']!.schema.properties[key] =
@@ -203,9 +206,7 @@ export default class OpenApiStager {
 	}
 
 	private sanitizeProperties(body: { schema: RequestBodySchema }) {
-		body.schema = this.mergeAllOf(body.schema);
-		body.schema = this.mergeAnyOf(body.schema);
-		body.schema = this.mergeOneOf(body.schema);
+		body.schema = this.mergeSchema(body.schema);
 
 		if (!body.schema.properties) {
 			return;
@@ -352,9 +353,7 @@ export default class OpenApiStager {
 				param.description = this.escape(param.description);
 			}
 
-			param.schema = this.mergeAllOf(param.schema);
-			param.schema = this.mergeAnyOf(param.schema);
-			param.schema = this.mergeOneOf(param.schema);
+			param.schema = this.mergeSchema(param.schema);
 
 			if (param.schema.enum) {
 				param.schema.type = 'options';
@@ -471,6 +470,25 @@ export default class OpenApiStager {
 				return _.concat(value1, value2);
 			}
 		});
+	}
+
+	private mergeSchema(schema: any) {
+		if (schema.allOf) {
+			schema = this.mergeAllOf(schema);
+			schema = this.mergeSchema(schema);
+		}
+
+		if (schema.anyOf) {
+			schema = this.mergeAnyOf(schema);
+			schema = this.mergeSchema(schema);
+		}
+
+		if (schema.oneOf) {
+			schema = this.mergeOneOf(schema);
+			schema = this.mergeSchema(schema);
+		}
+
+		return schema;
 	}
 
 	// TODO: fix types

@@ -43,7 +43,7 @@ export const <%= helper.camelCase(resourceName) %>Fields: INodeProperties[] = [
 		displayName: '<%= helper.titleCase(param.name); %>',
 		name: '<%= param.name; %>',
 		description: '<%- param.description; %>',
-		type: '<%= helper.adjustType(param.schema.type, param.name, param.schema.items, param.schema.properties); %>',
+		type: '<%= helper.adjustType(param.schema, param.name); %>',
 		<%_ if (helper.hasMinMax(param.schema) || param.schema.type === 'array') { _%>
 		typeOptions: {
 			<%_ if (helper.hasMinMax(param.schema)) { _%>
@@ -75,7 +75,7 @@ export const <%= helper.camelCase(resourceName) %>Fields: INodeProperties[] = [
 				{
 					displayName: '<%= helper.titleCase(subKey) %>',
 					name: '<%= subKey %>',
-					type: '<%= helper.adjustType(subValue.type, subKey, subValue.items); %>',
+					type: '<%= helper.adjustType(subValue, subKey); %>',
 					<%_ if (helper.hasMinMax(subValue) || subValue.type === 'array') { _%>
 					typeOptions: {
 						<%_ if (helper.hasMinMax(subValue)) { _%>
@@ -87,7 +87,20 @@ export const <%= helper.camelCase(resourceName) %>Fields: INodeProperties[] = [
 						<%_ } _%>
 					},
 					<%_ } _%>
+					<%_ if (subValue.type === 'options') { _%>
+					options: [
+						<%_ subValue.options.forEach(option => { _%>
+						{
+							name: '<%= helper.titleCase(option) %>',
+							value: '<%= option %>',
+						},
+						<%_ }); _%>
+					],
+					<%_ } _%>
 					default: <%- helper.getDefault(subValue); %>,
+					<%_ if (subValue.description) { _%>
+					description: '<%- helper.escape(subValue.description); %>',
+					<%_ } _%>
 				},
 			<%_ }); _%>
 		],
@@ -124,7 +137,7 @@ export const <%= helper.camelCase(resourceName) %>Fields: INodeProperties[] = [
 		<%_ if (value.description) { _%>
 		description: '<%- helper.escape(value.description); %>',
 		<%_ } _%>
-		type: '<%= helper.adjustType(value.type, property, value.items, value.properties); %>',
+		type: '<%= helper.adjustType(value, property); %>',
 		<%_ if (helper.hasMinMax(value) || value.type === 'array') { _%>
 		typeOptions: {
 			<%_ if (helper.hasMinMax(value)) { _%>
@@ -219,14 +232,14 @@ export const <%= helper.camelCase(resourceName) %>Fields: INodeProperties[] = [
 			<%_ if (mimeType === "application/x-www-form-urlencoded" || mimeType === "application/json") { _%>
 			<%_ const schema = rbItem.content[mimeType].schema; _%>
 			<%_ Object.entries(schema.properties || {}).forEach(([key, value]) => { _%>
-			<%_ if (['string', 'number', 'boolean', 'dateTime'].includes(helper.adjustType(value.type, key, value.items)) || (value.type === 'object' && !value.properties)) { _%>
+			<%_ if (['string', 'number', 'boolean', 'dateTime'].includes(helper.adjustType(value, key)) || (value.type === 'object' && !value.properties)) { _%>
 				<%_/**
 				* non-nested field inside extraFields
 				*/_%>
 			{
 				displayName: '<%= helper.titleCase(key); %>',
 				name: '<%= key %>',
-				type: '<%= helper.adjustType(value.type, key, value.items, value.properties); %>',
+				type: '<%= helper.adjustType(value, key); %>',
 				default: <%- helper.getDefault(value); %>,
 				<%_ if (value.description) { _%>
 				description: '<%- helper.escape(value.description) %>',
@@ -352,7 +365,7 @@ export const <%= helper.camelCase(resourceName) %>Fields: INodeProperties[] = [
 	<%_ } _%> <%#_ end rbItem.required if _%>
 	<%_ }); _%> <%#_ end rbItem loop _%>
 	<%_ } _%> <%#_ end requestBody if _%>
-	<%_ if (operation.operationId === 'getAll') { _%>
+	<%_ if (operation.operationId.startsWith('getAll')) { _%>
 	<%- builder.getAllAdditions(helper.camelCase(resourceName), helper.camelCase(operation.operationId)); %>
 	<%_ } _%>
 <%_ }); _%> <%#_ end operations loop _%>

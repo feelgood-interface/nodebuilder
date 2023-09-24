@@ -272,13 +272,9 @@ export default class OpenApiStager {
 
 		if (!extracted) return this.getFallbackId(requestMethod);
 
-		if (extracted.endsWith('ById')) return 'get';
+		extracted = camelCase(extracted);
 
-		if (extracted.match(/get./)) {
-			const words = this.camelCaseToSpaced(extracted).split(' ');
-			const lastWord = words.slice(-1).join('');
-			return lastWord.endsWith('s') ? 'getAll' : extracted;
-		}
+		if (extracted.endsWith('ById')) return 'get';
 
 		const tag = (jsonQuery({
 			json: this.json,
@@ -290,10 +286,26 @@ export default class OpenApiStager {
 			path: `$.paths.*.*`,
 		}) as any[])
 			.filter((x) => x.tags?.includes(tag))
-			.map((x) => x.operationId);
+			.map((x) => camelCase(x.operationId))
+			.filter((x) => x !== extracted);
+
+		if (extracted.match(/get./)) {
+			const words = this.camelCaseToSpaced(extracted).split(' ');
+			const lastWord = words.slice(-1).join('');
+			if (
+				lastWord.endsWith('s') &&
+				!allTagOperations
+					.filter((x) => x.match(/get./))
+					.some((x) => this.camelCaseToSpaced(x).split(' ').slice(-1).join('').endsWith('s'))
+			) {
+				return 'getAll';
+			} else {
+				return extracted;
+			}
+		}
 
 		if (extracted.startsWith('edit')) {
-			if (allTagOperations.filter((x) => x.startsWith('edit')).length > 1) {
+			if (allTagOperations.some((x) => x.startsWith('edit'))) {
 				return extracted.replace('edit', 'update');
 			} else {
 				return 'update';
@@ -301,16 +313,16 @@ export default class OpenApiStager {
 		}
 
 		if (extracted.startsWith('add')) {
-			if (allTagOperations.filter((x) => x.startsWith('add')).length > 1) {
+			if (allTagOperations.some((x) => x.startsWith('add'))) {
 				return extracted.replace('add', 'create');
 			} else {
 				return 'create';
 			}
 		}
 
-		if (extracted.startsWith('fetchAll')) {
-			if (allTagOperations.filter((x) => x.startsWith('fetchAll')).length > 1) {
-				return extracted.replace('fetchAll', 'getAll');
+		if (extracted.startsWith('fetchAll') || extracted.startsWith('list')) {
+			if (allTagOperations.some((x) => x.startsWith('fetchAll') || x.startsWith('list'))) {
+				return extracted.replace('fetchAll', 'getAll').replace('list', 'getAll');
 			} else {
 				return 'getAll';
 			}
@@ -367,7 +379,16 @@ export default class OpenApiStager {
 					type: 'object',
 					properties: queryParameters
 						.filter((x) => !x.required)
-						.reduce((result, item) => ({ ...result, [item.name]: item.schema }), {}),
+						.reduce(
+							(result, item) => ({
+								...result,
+								[item.name]: {
+									...item.schema,
+									description: item.description ?? item.schema.description,
+								},
+							}),
+							{},
+						),
 					default: '',
 				},
 			});

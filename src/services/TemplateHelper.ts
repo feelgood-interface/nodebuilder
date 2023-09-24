@@ -2,17 +2,18 @@ import { camelCase, capitalCase, pascalCase } from 'change-case';
 import { titleCase } from 'title-case';
 
 export class Helper {
-	// TODO: check format === "date-time"
-	adjustType = (type: string, name: string, items?: any, properties?: any): string => {
-		if (type === 'integer') return 'number';
-		if (name.toLowerCase().includes('date')) return 'dateTime';
-		if (type === 'object' && properties && name === 'query') return 'collection';
-		if (type === 'object' && properties) return 'fixedCollection';
-		if (type === 'object' && !properties) return 'json';
-		if (type === 'array' && items?.type) {
-			return this.adjustType(items.type, name);
+	adjustType = (schema: any, name: string): string => {
+		if (schema.type === 'integer') return 'number';
+		if (schema.format === 'date-time' || name.includes('date')) return 'dateTime';
+		if (schema.type === 'object' && schema.properties && name === 'query') {
+			return 'collection';
 		}
-		return type;
+		if (schema.type === 'object' && schema.properties) return 'fixedCollection';
+		if (schema.type === 'object' && !schema.properties) return 'json';
+		if (schema.type === 'array' && schema.items?.type) {
+			return this.adjustType(schema.items, name);
+		}
+		return schema.type;
 	};
 
 	camelCase = (str: string) => camelCase(str);

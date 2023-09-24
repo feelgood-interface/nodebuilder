@@ -50,7 +50,7 @@ export default class ResourceBuilder {
 			lines.push("type: 'fixedCollection',");
 			lines.push('default: {},');
 			if (schema.description) {
-				lines.push(`description: '${schema.description}',`);
+				lines.push(`description: '${helper.escape(schema.description)}',`);
 			}
 			lines.push('options: [{');
 			lines.push(`displayName: '${helper.titleCase(key)} Fields',`);
@@ -63,12 +63,10 @@ export default class ResourceBuilder {
 		} else {
 			lines.push(`displayName: '${helper.titleCase(key)}',`);
 			lines.push(`name: '${key}',`);
-			lines.push(
-				`type: '${helper.adjustType(schema.type, key, schema.items, schema.properties)}',`,
-			);
+			lines.push(`type: '${helper.adjustType(schema, key)}',`);
 			if (helper.hasMinMax(schema) || schema.type === 'array') {
 				lines.push('typeOptions: {');
-				if (helper.hasMinMax(schema) || schema.type === 'array') {
+				if (helper.hasMinMax(schema)) {
 					lines.push(`minValue: ${schema.minimum},`);
 					lines.push(`maxValue: ${schema.maximum},`);
 				}
@@ -77,9 +75,19 @@ export default class ResourceBuilder {
 				}
 				lines.push('},');
 			}
+			if (schema.type === 'options') {
+				lines.push('options: [');
+				for (const option of schema.options) {
+					lines.push('{');
+					lines.push(`name: '${helper.titleCase(option)}',`);
+					lines.push(`value: '${option}',`);
+					lines.push('},');
+				}
+				lines.push('],');
+			}
 			lines.push(`default: ${helper.getDefault(schema)},`);
 			if (schema.description) {
-				lines.push(`description: '${schema.description}',`);
+				lines.push(`description: '${helper.escape(schema.description)}',`);
 			}
 		}
 		lines.push('},');

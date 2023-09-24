@@ -90,6 +90,7 @@ type PathQuerySchema = {
 	properties?: {
 		[propertyName: string]: ParamContent;
 	};
+	description?: string;
 };
 
 type OperationRequestBody = {

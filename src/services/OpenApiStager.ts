@@ -396,74 +396,6 @@ export default class OpenApiStager {
 		return [...parameters.filter((x) => x.in !== 'query'), ...outputQueryParameters];
 	}
 
-	// TODO: fix types
-	/** Only take first sub-schema */
-	private mergeAnyOf(schema: any): any {
-		if (!schema || typeof schema !== 'object') {
-			return schema;
-		}
-
-		if (Array.isArray(schema.anyOf) && schema.anyOf.length > 0) {
-			const firstSchema = this.mergeAnyOf(schema.anyOf[0]);
-
-			// Remove the anyOf keyword and replace it with the first schema
-			delete schema.anyOf;
-			return { ...firstSchema, ...schema };
-		}
-
-		// Recursively merge anyOf schemas in properties
-		if (schema.properties) {
-			Object.keys(schema.properties).forEach((prop) => {
-				schema.properties[prop] = this.mergeAnyOf(schema.properties[prop]);
-			});
-		}
-
-		// Recursively merge anyOf schemas in items (for arrays)
-		if (schema.items) {
-			if (Array.isArray(schema.items)) {
-				schema.items = schema.items.map((item: any) => this.mergeAnyOf(item));
-			} else {
-				schema.items = this.mergeAnyOf(schema.items);
-			}
-		}
-
-		return schema;
-	}
-
-	// TODO: fix types
-	/** Only take first sub-schema */
-	private mergeOneOf(schema: any): any {
-		if (!schema || typeof schema !== 'object') {
-			return schema;
-		}
-
-		if (Array.isArray(schema.oneOf) && schema.oneOf.length > 0) {
-			const firstSchema = this.mergeOneOf(schema.oneOf[0]);
-
-			// Remove the oneOf keyword and replace it with the first schema
-			delete schema.oneOf;
-			return { ...firstSchema, ...schema };
-		}
-
-		// Recursively merge oneOf schemas in properties
-		if (schema.properties) {
-			Object.keys(schema.properties).forEach((prop) => {
-				schema.properties[prop] = this.mergeOneOf(schema.properties[prop]);
-			});
-		}
-
-		// Recursively merge oneOf schemas in items (for arrays)
-		if (schema.items) {
-			if (Array.isArray(schema.items)) {
-				schema.items = schema.items.map((item: any) => this.mergeOneOf(item));
-			} else {
-				schema.items = this.mergeOneOf(schema.items);
-			}
-		}
-
-		return schema;
-	}
-
 	private customMerge(object1: {}, object2: {}) {
 		return _.mergeWith(object1, object2, (value1, value2) => {
 			if (_.isArray(value1) && _.isArray(value2)) {
@@ -472,56 +404,44 @@ export default class OpenApiStager {
 		});
 	}
 
-	private mergeSchema(schema: any) {
-		if (schema.allOf) {
-			schema = this.mergeAllOf(schema);
-			schema = this.mergeSchema(schema);
-		}
-
-		if (schema.anyOf) {
-			schema = this.mergeAnyOf(schema);
-			schema = this.mergeSchema(schema);
-		}
-
-		if (schema.oneOf) {
-			schema = this.mergeOneOf(schema);
-			schema = this.mergeSchema(schema);
-		}
-
-		return schema;
-	}
-
-	// TODO: fix types
-	/** Merge schemas */
-	private mergeAllOf(schema: any): any {
+	/** Merge allOf, anyOf, oneOf */
+	private mergeSchema(schema: any): any {
 		if (!schema || typeof schema !== 'object') {
 			return schema;
 		}
 
 		if (Array.isArray(schema.allOf)) {
 			const mergedSchema = {};
-
 			schema.allOf.forEach((subSchema: any) => {
-				this.customMerge(mergedSchema, this.mergeAllOf(subSchema));
+				this.customMerge(mergedSchema, this.mergeSchema(subSchema));
 			});
-
 			delete schema.allOf;
 			return this.customMerge(mergedSchema, schema);
 		}
 
-		// Recursively merge allOf schemas in properties
+		if (Array.isArray(schema.anyOf) && schema.anyOf.length > 0) {
+			const firstSchema = this.mergeSchema(schema.anyOf[0]);
+			delete schema.anyOf;
+			return { ...firstSchema, ...schema };
+		}
+
+		if (Array.isArray(schema.oneOf) && schema.oneOf.length > 0) {
+			const firstSchema = this.mergeSchema(schema.oneOf[0]);
+			delete schema.oneOf;
+			return { ...firstSchema, ...schema };
+		}
+
 		if (schema.properties) {
 			Object.keys(schema.properties).forEach((prop) => {
-				schema.properties[prop] = this.mergeAllOf(schema.properties[prop]);
+				schema.properties[prop] = this.mergeSchema(schema.properties[prop]);
 			});
 		}
 
-		// Recursively merge allOf schemas in items (for arrays)
 		if (schema.items) {
 			if (Array.isArray(schema.items)) {
-				schema.items = schema.items.map((item: any) => this.mergeAllOf(item));
+				schema.items = schema.items.map((item: any) => this.mergeSchema(item));
 			} else {
-				schema.items = this.mergeAllOf(schema.items);
+				schema.items = this.mergeSchema(schema.items);
 			}
 		}
 

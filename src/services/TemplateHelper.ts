@@ -24,6 +24,7 @@ export class Helper {
 	getCredentialsString = (name: string, auth: AuthType) =>
 		this.camelCase(name) + (auth === 'OAuth2' ? 'OAuth2' : '') + 'Api';
 
+	// TODO: use adjustType to get type
 	getDefault(arg: any) {
 		if (arg.default) {
 			if (arg.type === 'boolean' || arg.type === 'number') return arg.default;
@@ -36,7 +37,13 @@ export class Helper {
 			}
 		}
 
-		if (arg.type === 'string' || arg.type === 'dateTime' || arg.type === 'loadOptions') return "''";
+		if (
+			arg.type === 'string' ||
+			arg.type === 'dateTime' ||
+			arg.type === 'loadOptions' ||
+			(arg.type === 'object' && !arg.properties)
+		)
+			return "''";
 		if (arg.type === 'number' || arg.type === 'integer') return 0;
 		if (arg.type === 'boolean') return false;
 		if (arg.type === 'options') return `'${arg.options[0]}'`;

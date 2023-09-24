@@ -99,4 +99,8 @@ export class Builder {
   getAllAdditions(resourceName: string, operationId: string) {
     return this.resourceBuilder.getAllAdditions(resourceName, operationId);
   }
+
+  generateFields(key: string, value: string): string {
+    return this.resourceBuilder.generateFields(key, value);
+  }
 }

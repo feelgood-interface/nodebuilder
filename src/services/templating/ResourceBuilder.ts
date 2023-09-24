@@ -1,4 +1,5 @@
 import { camelCase, capitalCase } from "change-case";
+import { Helper } from "../TemplateHelper";
 
 export default class ResourceBuilder {
   lines: string[] = [];
@@ -38,6 +39,58 @@ export default class ResourceBuilder {
       this.returnAll(resourceName, operationId),
       this.limit(resourceName, operationId),
     ].join("\n\t");
+  }
+
+  public generateFields(key: string, schema: any): string {
+    const helper = new Helper();
+    const lines = ["{"];
+    if (schema.type === "object" && schema.properties) {
+      lines.push(`displayName: '${helper.titleCase(key)}',`);
+      lines.push(`name: '${key}',`);
+      lines.push(`placeholder: 'Add ${helper.titleCase(key)} Field',`);
+      lines.push("type: 'fixedCollection',");
+      lines.push("default: {},");
+      if (schema.description) {
+        lines.push(`description: '${schema.description}',`);
+      }
+      lines.push("options: [{");
+      lines.push(`displayName: '${helper.titleCase(key)} Fields',`);
+      lines.push(`name: '${helper.addFieldsSuffix(key)}',`);
+      lines.push("values: [");
+      Object.entries(schema.properties).forEach(([subKey, subValue]) => {
+        lines.push(this.generateFields(subKey, subValue));
+      });
+      lines.push("]}],");
+    } else {
+      lines.push(`displayName: '${helper.titleCase(key)}',`);
+      lines.push(`name: '${key}',`);
+      lines.push(
+        `type: '${helper.adjustType(
+          schema.type,
+          key,
+          schema.items,
+          schema.properties
+        )}',`
+      );
+      if (helper.hasMinMax(schema) || schema.type === "array") {
+        lines.push("typeOptions: {");
+        if (helper.hasMinMax(schema) || schema.type === "array") {
+          lines.push(`minValue: ${schema.minimum},`);
+          lines.push(`maxValue: ${schema.maximum},`);
+        }
+        if (schema.type === "array") {
+          lines.push("multipleValues: true,");
+        }
+        lines.push("},");
+      }
+      lines.push(`default: ${helper.getDefault(schema)},`);
+      if (schema.description) {
+        lines.push(`description: '${schema.description}',`);
+      }
+    }
+    lines.push("},");
+
+    return lines.join("\n");
   }
 
   private returnAll(resourceName: string, operationId: string) {

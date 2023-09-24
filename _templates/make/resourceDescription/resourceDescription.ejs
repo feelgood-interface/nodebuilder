@@ -43,7 +43,7 @@ export const <%= helper.camelCase(resourceName) %>Fields: INodeProperties[] = [
 		displayName: '<%= helper.titleCase(param.name); %>',
 		name: '<%= param.name; %>',
 		description: '<%- param.description; %>',
-		type: '<%= helper.adjustType(param.schema.type, param.name, param.schema, param.schema.properties); %>',
+		type: '<%= helper.adjustType(param.schema.type, param.name, param.schema.items, param.schema.properties); %>',
 		<%_ if (helper.hasMinMax(param.schema) || param.schema.type === 'array') { _%>
 		typeOptions: {
 			<%_ if (helper.hasMinMax(param.schema)) { _%>
@@ -156,23 +156,7 @@ export const <%= helper.camelCase(resourceName) %>Fields: INodeProperties[] = [
 					name: '<%= helper.addFieldsSuffix(property) %>',
 					values: [
 					<%_ Object.entries(value.properties).forEach(([subKey, subValue]) => { _%>
-						{
-							displayName: '<%= helper.titleCase(subKey) %>',
-							name: '<%= subKey %>',
-							type: '<%= helper.adjustType(subValue.type, subKey, subValue.items); %>',
-							<%_ if (helper.hasMinMax(subValue) || subValue.type === 'array') { _%>
-							typeOptions: {
-								<%_ if (helper.hasMinMax(subValue)) { _%>
-								minValue: <%= subValue.minimum %>,
-								maxValue: <%= subValue.maximum %>,
-								<%_ } _%>
-								<%_ if (subValue.type === 'array') { _%>
-								multipleValues: true,
-								<%_ } _%>
-							},
-							<%_ } _%>
-							default: <%- helper.getDefault(subValue); %>,
-						},
+						<%- builder.generateFields(subKey, subValue); %>
 					<%_ }); _%>
 					]
 				}
@@ -358,40 +342,7 @@ export const <%= helper.camelCase(resourceName) %>Fields: INodeProperties[] = [
 				],
 			},
 			<%_ } else if (value.type === 'object' && value.properties) { _%>
-			{
-				displayName: '<%= helper.titleCase(key); %>',
-				name: '<%= key %>',
-				type: 'fixedCollection',
-				default: {},
-				placeholder: 'Add <%= helper.titleCase(key + " Field") %>',
-				options: [
-					{
-						displayName: '<%= helper.titleCase(key + " Fields") %>',
-						name: '<%= helper.addFieldsSuffix(key) %>',
-						values: [
-						<%_ Object.entries(value.properties).forEach(([subKey, subValue]) => { _%>
-							{
-								displayName: '<%= helper.titleCase(subKey) %>',
-								name: '<%= subKey %>',
-								type: '<%= helper.adjustType(subValue.type, subKey, subValue.items); %>',
-								<%_ if (helper.hasMinMax(subValue) || subValue.type === 'array') { _%>
-								typeOptions: {
-									<%_ if (helper.hasMinMax(subValue)) { _%>
-									minValue: <%= subValue.minimum %>,
-									maxValue: <%= subValue.maximum %>,
-									<%_ } _%>
-									<%_ if (subValue.type === 'array') { _%>
-									multipleValues: true,
-									<%_ } _%>
-								},
-								<%_ } _%>
-								default: <%- helper.getDefault(subValue); %>,
-							},
-						<%_ }); _%>
-						],
-					},
-				],
-			},
+				<%- builder.generateFields(key, value); %>
 			<%_ } _%>
 			<%_ }); _%> <%#_ end properties loop _%>
 			<%_ } _%> <%#_ end mimeType if _%>

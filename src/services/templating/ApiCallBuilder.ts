@@ -236,7 +236,8 @@ export default class ApiCallBuilder {
 
 	ordinaryEndpoint = (endpoint: string) => `const endpoint = '${endpoint}';`;
 
-	toTemplateLiteral = (endpoint: string) => endpoint.replace(/{/g, '${');
+	toTemplateLiteral = (endpoint: string) =>
+		endpoint.replace(/-([a-z])/g, (_, letter) => letter.toUpperCase()).replace(/{/g, '${');
 
 	// ------------------ call ------------------------
 

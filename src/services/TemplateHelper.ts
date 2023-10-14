@@ -62,6 +62,9 @@ export class Helper {
 	pascalCase = (str: string) => pascalCase(str);
 
 	titleCase = (str: string) => {
+		if (typeof str !== 'string') {
+			return (str as any).toString();
+		}
 		let base = str.replace(/[._]/g, ' ').trim();
 
 		if (base.toUpperCase() === base) base = base.toLowerCase();

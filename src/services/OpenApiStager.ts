@@ -94,7 +94,7 @@ export default class OpenApiStager {
 		if (description) return this.escape(description);
 	}
 
-	private processSummary() {
+	private processSummary(): string | void {
 		const summary = this.extract('summary');
 
 		if (summary) return this.escape(summary);
@@ -217,7 +217,9 @@ export default class OpenApiStager {
 
 		const properties = Object.keys(body.schema.properties);
 		properties.forEach((property) => {
-			const sanitizedProperty = camelCase(property.replace('.', ' '));
+			const sanitizedProperty = camelCase(
+				property.replace('.', ' ').replace(/-([a-z])/g, (_, letter) => letter.toUpperCase()),
+			);
 
 			if (sanitizedProperty !== property) {
 				body.schema.properties[sanitizedProperty] = body.schema.properties[property];
@@ -272,7 +274,7 @@ export default class OpenApiStager {
 		return operation;
 	}
 
-	private processOperationId(requestMethod: string) {
+	private processOperationId(requestMethod: string): string {
 		let extracted = this.extract('operationId');
 
 		if (!extracted) return this.getFallbackId(requestMethod);
@@ -365,6 +367,10 @@ export default class OpenApiStager {
 				delete param.schema.enum;
 			}
 		});
+
+		for (const param of parameters) {
+			param.name = param.name.replace(/-([a-z])/g, (_, letter) => letter.toUpperCase());
+		}
 
 		parameters.sort((a, b) => a.name.localeCompare(b.name));
 
@@ -591,15 +597,33 @@ export default class OpenApiStager {
 		return found;
 	}
 
-	private getFallbackId(requestMethod: string) {
+	private getFallbackId(requestMethod: string): string {
 		const hasBracket = this.currentEndpoint.split('').includes('}');
 
-		if (requestMethod === 'get' && hasBracket) return 'get';
-		if (requestMethod === 'get' && !hasBracket) return 'getAll';
-		if (requestMethod === 'put') return 'update';
-		if (requestMethod === 'delete') return 'delete';
-		if (requestMethod === 'post') return 'create';
+		const summary = this.processSummary();
+		if (summary) {
+			return (summary as string).replace(/(?:^\w|[A-Z]|\b\w)/g, (match, index) => {
+				if (index === 0) {
+					return match.toUpperCase();
+				}
+				return match.toUpperCase().replace(/\s+/g, '');
+			});
+		}
 
-		return 'UNNAMED';
+		let operation: string;
+
+		if (requestMethod === 'get' && hasBracket) operation = 'get';
+		else if (requestMethod === 'get' && !hasBracket) operation = 'getAll';
+		else if (requestMethod === 'put') operation = 'update';
+		else if (requestMethod === 'delete') operation = 'delete';
+		else if (requestMethod === 'post') operation = 'create';
+		else operation = 'UNNAMED';
+
+		const routeSplit = this.currentEndpoint.split('/');
+		const operationId = this.currentEndpoint.endsWith('}')
+			? routeSplit[routeSplit.length - 2]
+			: routeSplit[routeSplit.length - 1];
+
+		return operation + titleCase(operationId);
 	}
 }

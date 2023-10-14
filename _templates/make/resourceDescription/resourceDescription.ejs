@@ -354,7 +354,7 @@ export const <%= helper.camelCase(resourceName) %>Fields: INodeProperties[] = [
 					},
 				],
 			},
-			<%_ } else if (value.type === 'object' && value.properties) { _%>
+			<%_ } else if ((value.type === 'object' && value.properties) || (value.type === 'array' && value.items)) { _%>
 				<%- builder.generateFields(key, value); %>
 			<%_ } _%>
 			<%_ }); _%> <%#_ end properties loop _%>
@@ -365,7 +365,7 @@ export const <%= helper.camelCase(resourceName) %>Fields: INodeProperties[] = [
 	<%_ } _%> <%#_ end rbItem.required if _%>
 	<%_ }); _%> <%#_ end rbItem loop _%>
 	<%_ } _%> <%#_ end requestBody if _%>
-	<%_ if (operation.operationId.startsWith('getAll')) { _%>
+	<%_ if (operation.operationId.startsWith('getAll') || operation.operationId.includes('search')) { _%>
 	<%- builder.getAllAdditions(helper.camelCase(resourceName), helper.camelCase(operation.operationId)); %>
 	<%_ } _%>
 <%_ }); _%> <%#_ end operations loop _%>

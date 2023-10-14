@@ -60,6 +60,23 @@ export default class ResourceBuilder {
 				lines.push(this.generateFields(subKey, subValue));
 			});
 			lines.push(']}],');
+		} else if (schema.type === 'array' && schema.items && schema.items.type === 'object') {
+			lines.push(`displayName: '${this.helper.titleCase(key)}',`);
+			lines.push(`name: '${key}',`);
+			lines.push(`placeholder: 'Add ${this.helper.titleCase(key)} Field',`);
+			lines.push(`type: 'fixedCollection',`);
+			lines.push('default: {},');
+			if (schema.description) {
+				lines.push(`description: '${this.helper.escape(schema.description)}',`);
+			}
+			lines.push('options: [{');
+			lines.push(`displayName: '${this.helper.titleCase(key)} Fields',`);
+			lines.push(`name: '${this.helper.addFieldsSuffix(key)}',`);
+			lines.push('values: [');
+			Object.entries(schema.items.properties).forEach(([subKey, subValue]) => {
+				lines.push(this.generateFields(subKey, subValue));
+			});
+			lines.push(']}],');
 		} else {
 			lines.push(`displayName: '${this.helper.titleCase(key)}',`);
 			lines.push(`name: '${key}',`);

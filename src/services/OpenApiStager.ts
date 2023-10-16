@@ -393,7 +393,7 @@ export default class OpenApiStager {
 								...result,
 								[item.name]: {
 									...item.schema,
-									description: item.description ?? item.schema.description,
+									description: item.description || item.schema?.description,
 								},
 							}),
 							{},

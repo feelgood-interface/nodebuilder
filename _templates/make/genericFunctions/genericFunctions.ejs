@@ -4,17 +4,17 @@ to: src/output/GenericFunctions.ts
 <%_ const helper = new Helper(); _%>
 <%_ const serviceName = helper.camelCase(metaParams.serviceName); _%>
 <%_ const credentialsName = helper.getCredentialsString(metaParams.serviceName, metaParams.authType); _%>
-import {
+import type {
 	IExecuteFunctions,
 } from 'n8n-core';
-
-import {
+import type {
 	IDataObject,
+} from 'n8n-workflow';
+import {
 	NodeApiError,
 	NodeOperationError,
 } from 'n8n-workflow';
-
-import {
+import type {
 	OptionsWithUri,
 } from 'request';
 

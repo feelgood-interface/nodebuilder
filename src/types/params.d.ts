@@ -153,4 +153,4 @@ type StringArrayKey = 'tags' | 'requestMethods';
 
 type StringKey = 'description' | 'operationId' | 'summary';
 
-type CustomObjectKey = 'parameters' | 'requestBody';
+type CustomObjectKey = 'parameters' | 'requestBody' | 'security';

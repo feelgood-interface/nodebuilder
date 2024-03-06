@@ -3,7 +3,7 @@ to: src/output/descriptions/<%= pascalCase(resourceName) %>Description.ts
 ---
 <%_ const helper = new Helper(); _%>
 <%_ const builder = new Builder(mainParams, metaParams); _%>
-import {
+import type {
 	INodeProperties,
 } from 'n8n-workflow';
 
@@ -69,7 +69,7 @@ export const <%= helper.camelCase(resourceName) %>Fields: INodeProperties[] = [
 		],
 		<%_ } _%>
 		<%_ if (param.schema.type === 'object' && param.schema.properties) { _%>
-		placeholder: 'Add <%= helper.titleCase(param.name + " Field") %>',
+		placeholder: 'Add <%= helper.titleCase(param.name) %>',
 		options: [
 			<%_ Object.entries(param.schema.properties).forEach(([subKey, subValue]) => { _%>
 				{
@@ -162,10 +162,10 @@ export const <%= helper.camelCase(resourceName) %>Fields: INodeProperties[] = [
 		],
 		<%_ } _%>
 		<%_ if (value.type === 'object' && value.properties) { _%>
-			placeholder: 'Add <%= helper.titleCase(property + " Field") %>',
+			placeholder: 'Add <%= helper.titleCase(property) %>',
 			options: [
 				{
-					displayName: '<%= helper.titleCase(property + " Fields") %>',
+					displayName: '<%= helper.titleCase(property) %>',
 					name: '<%= helper.addFieldsSuffix(property) %>',
 					values: [
 					<%_ Object.entries(value.properties).forEach(([subKey, subValue]) => { _%>
@@ -304,13 +304,13 @@ export const <%= helper.camelCase(resourceName) %>Fields: INodeProperties[] = [
 				name: '<%= key %>',
 				type: 'fixedCollection',
 				default: {},
-				placeholder: 'Add <%= helper.titleCase(key + " Field") %>',
+				placeholder: 'Add <%= helper.titleCase(key) %>',
 				typeOptions: {
 					multipleValues: true,
 				},
 				options: [
 					{
-						displayName: '<%= helper.titleCase(key + " Fields") %>',
+						displayName: '<%= helper.titleCase(key) %>',
 						name: '<%= helper.addFieldsSuffix(key) %>',
 						values: [
 						<%_ value.forEach(i => { _%>
@@ -336,10 +336,10 @@ export const <%= helper.camelCase(resourceName) %>Fields: INodeProperties[] = [
 				name: '<%= key %>',
 				type: 'fixedCollection',
 				default: {},
-				placeholder: 'Add <%= helper.titleCase(key + " Field") %>',
+				placeholder: 'Add <%= helper.titleCase(key) %>',
 				options: [
 					{
-						displayName: '<%= helper.titleCase(key + " Fields") %>',
+						displayName: '<%= helper.titleCase(key) %>',
 						name: '<%= helper.addFieldsSuffix(key) %>',
 						values: [
 						<%_ Object.keys(value).forEach(subKey => { _%>
@@ -367,6 +367,24 @@ export const <%= helper.camelCase(resourceName) %>Fields: INodeProperties[] = [
 	<%_ } _%> <%#_ end requestBody if _%>
 	<%_ if (operation.operationId.startsWith('getAll') || operation.operationId.includes('search')) { _%>
 	<%- builder.getAllAdditions(helper.camelCase(resourceName), helper.camelCase(operation.operationId)); %>
+	<%_ } _%>
+	<%_ if (operation.security) { _%>
+		{
+			displayName: 'Scope',
+			name: 'scope',
+			type: 'hidden',
+			default: '<%= operation.security.default %>',
+			displayOptions: {
+				show: {
+					resource: [
+						'<%= helper.camelCase(resourceName); %>',
+					],
+					operation: [
+						'<%= helper.camelCase(operation.operationId); %>',
+					],
+				},
+			},
+		},
 	<%_ } _%>
 <%_ }); _%> <%#_ end operations loop _%>
 ];

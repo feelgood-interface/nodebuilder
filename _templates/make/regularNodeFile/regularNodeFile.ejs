@@ -3,11 +3,10 @@ to: src/output/<%= pascalCase(metaParams.serviceName) %>.node.ts
 ---
 <%_ const builder = new Builder(mainParams, metaParams); _%>
 <%_ const helper = new Helper(); _%>
-import {
+import type {
 	IExecuteFunctions,
 } from 'n8n-core';
-
-import {
+import type {
 	IDataObject,
 	INodeExecutionData,
 	INodeType,

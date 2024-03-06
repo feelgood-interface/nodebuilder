@@ -109,6 +109,10 @@ export default class OpenApiStager {
 
 		if (!requestBody) return null;
 
+		if (!requestBody.content['application/json'] && (requestBody as any).content['*/*']) {
+			requestBody.content['application/json'] = (requestBody as any).content['*/*'];
+		}
+
 		const urlEncoded = requestBody.content['application/x-www-form-urlencoded'];
 		const json = requestBody.content['application/json'];
 		const textPlain = requestBody.content['text/plain'];
@@ -254,6 +258,22 @@ export default class OpenApiStager {
 		});
 	}
 
+	private processSecurity() {
+		const security = this.extract('security' as any);
+		if (Array.isArray(security) && security.length > 0) {
+			const scopes = (security as any[])[0]['OAuth2'] as string[];
+			return {
+				type: 'string',
+				default: scopes.join(' '),
+			};
+		} else {
+			return {
+				type: 'string',
+				default: '',
+			};
+		}
+	}
+
 	private createOperation(requestMethod: string) {
 		const operation: Operation = {
 			endpoint: this.currentEndpoint,
@@ -261,15 +281,21 @@ export default class OpenApiStager {
 			operationId: this.processOperationId(requestMethod),
 		};
 
+		if (this.currentEndpoint.includes('orders')) {
+			console.log();
+		}
+
 		const parameters = this.processParameters();
 		const requestBody = this.processRequestBody();
 		const description = this.processDescription();
 		const summary = this.processSummary();
+		const security = this.processSecurity();
 
 		if (parameters.length) operation.parameters = parameters;
 		if (requestBody?.length) operation.requestBody = requestBody;
 		if (description) operation.description = description;
 		if (summary) operation.summary = summary;
+		if (security) (operation as any).security = security;
 
 		return operation;
 	}
@@ -523,7 +549,8 @@ export default class OpenApiStager {
 			key === 'description' ||
 			key === 'operationId' ||
 			(key === 'requestBody' && result.length) ||
-			key === 'summary';
+			key === 'summary' ||
+			key === 'security';
 
 		if (hasExtraNesting) return result[0];
 

@@ -281,10 +281,6 @@ export default class OpenApiStager {
 			operationId: this.processOperationId(requestMethod),
 		};
 
-		if (this.currentEndpoint.includes('orders')) {
-			console.log();
-		}
-
 		const parameters = this.processParameters();
 		const requestBody = this.processRequestBody();
 		const description = this.processDescription();
